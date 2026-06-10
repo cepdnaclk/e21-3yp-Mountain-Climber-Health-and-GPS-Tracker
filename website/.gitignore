@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local packaging / backup files
+website_old_messy_backup/
+workspace-file-tree.txt

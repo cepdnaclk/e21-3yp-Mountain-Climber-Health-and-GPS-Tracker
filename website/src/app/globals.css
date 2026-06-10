@@ -5,16 +5,18 @@
   --foreground: #f8fafc;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+input,
+textarea,
+select {
+  color: #f8fafc;
+  background: #020617;
+}
+
+a {
+  color: inherit;
 }
