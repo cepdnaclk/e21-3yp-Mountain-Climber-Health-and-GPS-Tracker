@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: web-dashboard
+        working-directory: MountainSafety_Dashboard
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

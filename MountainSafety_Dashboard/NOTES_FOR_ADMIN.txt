@@ -1,0 +1,18 @@
+Build folder contents
+
+app.py
+- Customer-packaging version of your Flask dashboard.
+- It auto-detects the ESP32 COM port.
+- It opens http://127.0.0.1:5000 automatically.
+
+requirements.txt
+- Python packages required to build the EXE.
+
+build_windows.ps1
+- Main Windows build script.
+
+BUILD_WINDOWS_EXE.bat
+- Double-click helper for admins who do not want to type PowerShell commands.
+
+README_FIRST.txt
+- Included inside the final customer ZIP.
