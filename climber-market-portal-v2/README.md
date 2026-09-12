@@ -45,3 +45,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
   - `types/`: Shared TypeScript definitions (e.g., Supabase table interfaces).
 - `lib/`: Utility functions and clients, such as Supabase client configurations (`server.ts`, `client.ts`).
 - `public/`: Static assets including product images and icons.
+ 
