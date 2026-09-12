@@ -32,3 +32,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local database artifacts
+MountainSafety_Dashboard/climbers.db
