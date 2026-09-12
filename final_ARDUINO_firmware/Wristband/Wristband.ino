@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <esp_task_wdt.h>
 
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -557,11 +558,11 @@ void startBle()
   );
 
   advertising->setMinPreferred(
-    0x06
+    0x00A0
   );
 
   advertising->setMaxPreferred(
-    0x12
+    0x0140
   );
 
   advertising->start();
@@ -588,7 +589,10 @@ void setup()
   // board is running fine. This is a fixed delay, not a blocking wait for
   // Serial to connect, so the device still boots normally with no PC
   // attached at all during real field/climbing use.
-  delay(3000);
+  delay(1000);
+
+  esp_task_wdt_init(8, true);
+  esp_task_wdt_add(NULL);
 
   Serial.println();
 
@@ -623,6 +627,8 @@ void setup()
 
 void loop()
 {
+  esp_task_wdt_reset();
+
   processHeartRate();
 
   if (

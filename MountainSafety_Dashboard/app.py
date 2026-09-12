@@ -9,6 +9,7 @@ import sqlite3
 import re
 import os
 import webbrowser
+import collections
 
 # ===================== CONFIG =====================
 APP_NAME = "MountainSafety Basecamp Dashboard"
@@ -42,8 +43,6 @@ base_updated_at = int(time.time())
 base_location_seq = 1
 
 ONLINE_TIMEOUT_S = 25
-NO_PACKET_WARNING_S = 12
-MAP_MIN_RADIUS_M = 250.0
 PATH_MIN_MOVE_M = 15.0
 
 app = Flask(__name__)
@@ -52,7 +51,7 @@ ser = None
 serial_status = "Serial not connected"
 serial_lock = threading.Lock()
 
-seen_message_ids = set()
+seen_message_ids = collections.deque(maxlen=300)
 pending_commands = []
 
 # ===================== DB SETUP =====================
@@ -177,11 +176,11 @@ def add_chat(sender, text):
 
 def to_float(v, default=0.0):
     try: return float(v)
-    except: return default
+    except (ValueError, TypeError): return default
 
 def to_int(v, default=0):
     try: return int(v)
-    except: return default
+    except (ValueError, TypeError): return default
 
 def to_int_or_none(v, default=None):
     try: return int(v)
@@ -216,8 +215,7 @@ def is_duplicate_packet(packet):
     mid = extract(packet, "MID")
     if not mid: return False
     if mid in seen_message_ids: return True
-    seen_message_ids.add(mid)
-    if len(seen_message_ids) > 300: seen_message_ids.clear()
+    seen_message_ids.append(mid)
     return False
 
 def get_all_climbers():
@@ -450,10 +448,11 @@ def send_serial_line(line):
         return True
     except Exception as e:
         print("Serial write failed:", e)
-        try:
-            if ser: ser.close()
-        except: pass
-        ser = None
+        with serial_lock:
+            try:
+                if ser: ser.close()
+            except Exception: pass
+            ser = None
         return False
 
 def queue_or_send(line, display="", target="ALL"):
@@ -492,7 +491,8 @@ def serial_reader_loop():
             elif t == "lora_rx":
                 packet = data.get("packet", "")
                 cid = data.get("id") or extract(packet, "ID") or extract(packet, "FROM") or "CLIMBER01"
-                update_climber_from_packet(cid, packet, data.get("rssi", 0), data.get("snr", 0.0))
+                if re.match(r"^[A-Za-z0-9_-]{3,20}$", cid):
+                    update_climber_from_packet(cid, packet, data.get("rssi", 0), data.get("snr", 0.0))
             elif t == "lora_tx":
                 target = data.get("to", "CLIMBER01")
                 packet = data.get("packet", "")
@@ -580,9 +580,20 @@ def api_status():
     now = int(time.time())
     arr = []
     
-    climbers = get_all_climbers()
-    for c in climbers:
-        c = get_climber(c["id"])  # fetch with path
+    conn = get_db()
+    climber_rows = conn.execute("SELECT * FROM climbers").fetchall()
+    path_rows = conn.execute("SELECT climber_id, lat, lon, time FROM path_points ORDER BY climber_id, id ASC").fetchall()
+    conn.close()
+    
+    paths_by_cid = {}
+    for r in path_rows:
+        cid = r["climber_id"]
+        if cid not in paths_by_cid: paths_by_cid[cid] = []
+        paths_by_cid[cid].append({"lat": r["lat"], "lon": r["lon"], "time": r["time"]})
+
+    for row in climber_rows:
+        c = dict(row)
+        c["path"] = paths_by_cid.get(c["id"], [])
         update_distance(c)
         sec = now - c["last_seen"] if c["last_seen"] else 0
         online = c["last_seen"] > 0 and sec < ONLINE_TIMEOUT_S
@@ -601,7 +612,6 @@ def api_status():
             "name": BASE_NAME, "lat": base_lat, "lon": base_lon, "alt": base_alt,
             "source": base_source, "updated_at": base_updated_at, "seq": base_location_seq,
         },
-        "map_min_radius_m": MAP_MIN_RADIUS_M,
         "path_min_move_m": PATH_MIN_MOVE_M,
         "online_timeout_s": ONLINE_TIMEOUT_S,
         "total_count": len(arr),
@@ -628,7 +638,7 @@ def api_export_log():
         ]
         lines.append(",".join([f'"{v}"' for v in vals]))
     
-    return Response("\\n".join(lines) + "\\n", mimetype="text/csv", headers={"Content-Disposition": "attachment; filename=basecamp_session_log.csv"})
+    return Response("\n".join(lines) + "\n", mimetype="text/csv", headers={"Content-Disposition": "attachment; filename=basecamp_session_log.csv"})
 
 @app.route("/api/clear-log", methods=["POST"])
 def api_clear_log():
@@ -664,7 +674,7 @@ def api_send_base():
 def api_send():
     data = request.get_json(silent=True) or {}
     target = data.get("target", "CLIMBER01").strip()
-    msg = data.get("message", "").strip()[:120].replace(",", " ")
+    msg = data.get("message", "").strip()[:120].replace(",", " ").replace("|", " ")
     
     if not msg: return jsonify({"error": "empty"}), 400
     if find_climber(target) is None: return jsonify({"error": "unknown_climber"}), 404
@@ -740,69 +750,99 @@ HTML = """
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-/* DARK THEME STYLES */
-body { margin: 0; font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; }
-header { background: #020617; color: white; padding: 20px; border-bottom: 1px solid #334155; }
+:root {
+  --bg-main: #0b0f19;
+  --bg-card: #151b2b;
+  --accent: #0ea5e9;
+  --text-main: #f1f5f9;
+}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+body { margin: 0; font-family: Arial, sans-serif; background: var(--bg-main); color: var(--text-main); }
+header { background: var(--bg-card); color: var(--text-main); padding: 20px; border-bottom: 1px solid #1e293b; }
 .wrap { max-width: 1250px; margin: auto; padding: 18px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-.card, .panel { background: #1e293b; border-radius: 18px; padding: 16px; box-shadow: 0 4px 6px #0008; border: 1px solid #334155; }
-.value { font-size: 28px; font-weight: bold; color: #f1f5f9; }
+.card, .panel { background: var(--bg-card); border-radius: 18px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid #1e293b; }
+.value { font-size: 28px; font-weight: bold; color: var(--text-main); }
 .layout { display: grid; grid-template-columns: 390px 1fr; gap: 16px; margin-top: 16px; }
 @media(max-width: 900px) { .layout { grid-template-columns: 1fr; } }
-.climber { padding: 12px; border-left: 8px solid #475569; background: #0f172a; border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-.climber:hover { background: #162032; }
-.safe { border-left-color: #16a34a; }
-.danger { border-left-color: #ef4444; }
-.warn { border-left-color: #f97316; }
-.nogps { border-left-color: #ef4444; }
-.lastknown { border-left-color: #f97316; }
+.climber { padding: 16px; background: var(--bg-main); border-radius: 14px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 1px solid #1e293b; }
+.climber:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); border-color: var(--accent); }
+.safe { border-left: 6px solid #16a34a; }
+.danger { border-left: 6px solid #ef4444; }
+.warn { border-left: 6px solid #f97316; }
+.nogps { border-left: 6px solid #ef4444; }
+.lastknown { border-left: 6px solid #f97316; }
 .offline { opacity: 0.72; }
-.selected { outline: 2px solid #3b82f6; background: #1e3a8a; }
-.row { display: flex; justify-content: space-between; border-bottom: 1px solid #334155; padding: 6px 0; gap: 10px; }
+.selected { outline: 2px solid var(--accent); background: #1e293b; }
+.row { display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding: 8px 0; gap: 10px; font-size: 14px; }
+.row:last-child { border-bottom: none; }
 
-/* LEAFLET MAP STYLES */
-#map { width: 100%; height: 500px; background: #0f172a; border-radius: 16px; border: 1px solid #334155; z-index: 1; }
-.leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); } /* Dark mode map filter */
-.leaflet-tooltip { background-color: #1e293b; color: #f8fafc; border: 1px solid #334155; box-shadow: 0 4px 6px #0008; border-radius: 8px;}
-.leaflet-tooltip-left::before { border-left-color: #334155; }
-.leaflet-tooltip-right::before { border-right-color: #334155; }
+#map { width: 100%; height: 500px; background: var(--bg-main); border-radius: 16px; border: 1px solid #1e293b; z-index: 1; }
+.leaflet-tooltip { background-color: var(--bg-card); color: var(--text-main); border: 1px solid #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.5); border-radius: 8px;}
+.leaflet-tooltip-left::before { border-left-color: #1e293b; }
+.leaflet-tooltip-right::before { border-right-color: #1e293b; }
 
-.packet { background: #020617; color: #e2e8f0; border-radius: 12px; padding: 12px; white-space: pre-wrap; word-break: break-word; font-family: Consolas, monospace; min-height: 100px; border: 1px solid #334155;}
-.chat { height: 230px; overflow-y: auto; background: #0f172a; border-radius: 12px; padding: 10px; border: 1px solid #334155; }
-.msg { padding: 10px; border-radius: 12px; margin: 8px 0; }
-.msg.base { background: #1e3a8a; color: #e0e7ff; }
-.msg.climber { background: #065f46; color: #d1fae5; }
-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #475569; background: #0f172a; color: white; margin-top: 10px; box-sizing: border-box; }
-input::placeholder { color: #94a3b8; }
-button { padding: 12px 16px; border: 0; border-radius: 10px; background: #2563eb; color: white; font-weight: bold; margin-top: 8px; cursor: pointer; transition: 0.2s;}
-button:hover { background: #1d4ed8; }
+.packet { background: var(--bg-main); color: #cbd5e1; border-radius: 12px; padding: 12px; white-space: pre-wrap; word-break: break-word; font-family: Consolas, monospace; min-height: 100px; border: 1px solid #1e293b;}
+.chat { height: 260px; overflow-y: auto; background: var(--bg-main); border-radius: 12px; padding: 12px; border: 1px solid #1e293b; display: flex; flex-direction: column; gap: 8px; }
+.msg { padding: 10px 14px; border-radius: 18px; max-width: 75%; font-size: 14px; line-height: 1.4; }
+.msg.base { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg.climber { background: #334155; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
+.msg b { display: block; font-size: 11px; margin-bottom: 4px; opacity: 0.8; }
+input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main); margin-top: 10px; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+input:focus { border-color: var(--accent); }
+input::placeholder { color: #64748b; }
+button { padding: 12px 16px; border: 0; border-radius: 10px; background: var(--accent); color: white; font-weight: bold; margin-top: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+button:hover { background: #0284c7; transform: translateY(-1px); }
 button.danger { background: #dc2626; }
 button.danger:hover { background: #b91c1c; }
 button.green { background: #16a34a; }
 button.green:hover { background: #15803d; }
-button.small { padding: 6px 12px; margin: 0 0 0 10px; font-size: 13px; background: #475569; }
-button.small:hover { background: #334155; }
-.note { color: #94a3b8; font-size: 13px; line-height: 1.4; }
+button.small { padding: 6px 12px; margin: 0 0 0 10px; font-size: 13px; background: #334155; }
+button.small:hover { background: #475569; }
+.note { color: #64748b; font-size: 13px; line-height: 1.4; }
 .badge { display: inline-block; color: white; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: bold; }
 .badge.ok { background: #16a34a; }
 .badge.warn { background: #f97316; }
 .badge.bad { background: #ef4444; }
 .badge.gray { background: #475569; }
+
 .alertbox { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-.alertitem { border-radius: 12px; padding: 12px; font-weight: bold; }
+.alertitem { border-radius: 12px; padding: 12px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 .alertitem.CRITICAL { background: #7f1d1d; color: #fecaca; border-left: 6px solid #ef4444; }
 .alertitem.WARNING { background: #7c2d12; color: #fed7aa; border-left: 6px solid #f97316; }
 .alertitem.INFO { background: #1e3a8a; color: #bfdbfe; border-left: 6px solid #3b82f6; }
-.logbox { max-height: 260px; overflow-y: auto; background: #0f172a; border-radius: 12px; padding: 10px; margin-top: 10px; border: 1px solid #334155;}
-.logrow { display: grid; grid-template-columns: 80px 90px 140px 1fr; gap: 8px; padding: 7px; border-bottom: 1px solid #334155; font-size: 13px; color: #cbd5e1;}
+.logbox { max-height: 260px; overflow-y: auto; background: var(--bg-main); border-radius: 12px; padding: 10px; margin-top: 10px; border: 1px solid #1e293b;}
+.logrow { display: grid; grid-template-columns: 80px 90px 140px 1fr; gap: 8px; padding: 8px; border-bottom: 1px solid #1e293b; font-size: 13px; color: #94a3b8;}
+.logrow:last-child { border-bottom: none; }
 @media(max-width: 700px) { .logrow { grid-template-columns: 1fr; } }
+
+@keyframes pulseRed {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+@keyframes pulseGreen {
+    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+.pulse-red { animation: pulseRed 1.5s infinite; border-color: #ef4444; }
+.pulse-green { animation: pulseGreen 1.5s infinite; border-color: #16a34a; }
 </style>
 </head>
 
 <body>
 <header>
     <h1>Mountain Climber Base Camp Monitor</h1>
-    <div id="serial" style="color: #94a3b8;">Checking...</div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <select id="portSelect" style="padding: 4px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 4px;"></select>
+        <button onclick="connectPort()" class="small" style="margin: 0;">Connect</button>
+        <div id="serial" style="color: #94a3b8; margin-left: 10px;">Checking...</div>
+    </div>
 </header>
 
 <div class="wrap">
@@ -897,8 +937,9 @@ function initMap() {
     
     map = L.map('map').setView([lat, lon], 15);
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
         maxZoom: 19
     }).addTo(map);
 
@@ -937,7 +978,7 @@ function updateMap() {
         let isCurrent = c.gps_fix === 1;
         
         let color = isSos ? "#ef4444" : (isCurrent ? "#16a34a" : "#f97316");
-        let displayName = c.display_name || c.id;
+        let displayName = esc(c.display_name || c.id);
 
         let icon = L.divIcon({
             className: 'custom-div-icon',
@@ -967,6 +1008,20 @@ function updateMap() {
             }
         }
     });
+
+    let validIds = new Set(valid.map(c => c.id));
+    for (let id in climberMarkers) {
+        if (!validIds.has(id)) {
+            map.removeLayer(climberMarkers[id]);
+            delete climberMarkers[id];
+        }
+    }
+    for (let id in climberPaths) {
+        if (!validIds.has(id)) {
+            map.removeLayer(climberPaths[id]);
+            delete climberPaths[id];
+        }
+    }
 }
 
 function gpsBadge(c) {
@@ -1146,6 +1201,8 @@ function drawList() {
     climbers.forEach(c => {
         const div = document.createElement("div");
         div.className = "climber " + cls(c) + (c.id == selected ? " selected" : "");
+        if (c.sos == 1) div.classList.add("pulse-red");
+        else if (c.gps_fix === 1) div.classList.add("pulse-green");
         div.onclick = () => selectClimber(c.id);
 
         const displayLat = mapLat(c);
@@ -1154,8 +1211,8 @@ function drawList() {
         let displayName = c.display_name || c.id;
 
         div.innerHTML = `
-            <h3>${displayName} ${onlineBadge(c)}</h3>
-            <div class="row"><span>Hardware ID</span><b style="color:#94a3b8;">${c.id}</b></div>
+            <h3>${esc(displayName)} ${onlineBadge(c)}</h3>
+            <div class="row"><span>Hardware ID</span><b style="color:#94a3b8;">${esc(c.id)}</b></div>
             <div class="row"><span>GPS Status</span><b>${gpsBadge(c)}</b></div>
             <div class="row"><span>GPS Age</span><b>${c.gps_age_s}s</b></div>
             <div class="row"><span>Satellites</span><b>${c.gps_satellites}</b></div>
@@ -1264,7 +1321,7 @@ async function update() {
         d.messages.forEach(m => {
             const div = document.createElement("div");
             div.className = "msg " + (m.sender == "BASE CAMP" ? "base" : "climber");
-            div.innerHTML = `<b>${m.sender} • ${m.time}</b><br>${esc(m.text)}`;
+            div.innerHTML = `<b>${m.sender} • ${m.time}</b>${esc(m.text)}`;
             chat.appendChild(div);
         });
 
@@ -1311,6 +1368,7 @@ async function sendMsg() {
     });
     const res = await r.json();
     if (res.error) { alert("Send failed: " + res.error); return; }
+    if (res.status === "queued") { alert("Message queued for sending"); }
 
     input.value = "";
     update();
@@ -1336,6 +1394,27 @@ async function clearLog() {
 window.addEventListener("resize", function() {
     if (isMapInitialized) map.invalidateSize();
 });
+
+async function fetchPorts() {
+    try {
+        const r = await fetch("/api/ports");
+        const d = await r.json();
+        const sel = document.getElementById("portSelect");
+        sel.innerHTML = d.ports.map(p => \`<option value="\${p}" \${p===d.current?'selected':''}>\${p}</option>\`).join("");
+    } catch(e) {}
+}
+async function connectPort() {
+    const port = document.getElementById("portSelect").value;
+    if(!port) return;
+    await fetch("/api/connect", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({port})
+    });
+    document.getElementById("serial").innerText = "Connecting to " + port + "...";
+}
+setTimeout(fetchPorts, 500);
+setInterval(fetchPorts, 10000);
 
 setInterval(update, 750);
 update();

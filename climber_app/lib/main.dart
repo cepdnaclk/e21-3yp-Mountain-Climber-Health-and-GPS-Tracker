@@ -32,8 +32,9 @@ class ClimberApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.red,
-        scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+        brightness: Brightness.dark,
+        colorSchemeSeed: Colors.teal,
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
       ),
       home: const HomePage(),
     );
@@ -185,6 +186,7 @@ class _HomePageState extends State<HomePage> {
   DateTime lastArmbandSeen = DateTime.fromMillisecondsSinceEpoch(0);
 
   String infoText = 'Starting...';
+  String _lastError = '';
 
   final List<ConversationMessage> conversation = [];
 
@@ -318,7 +320,10 @@ class _HomePageState extends State<HomePage> {
           phoneAlt = pos.altitude;
           if (mounted) setState(() {});
         }
-      } catch (_) {}
+      } catch (e) {
+        _lastError = 'GPS Error: $e';
+        if (mounted) setState(() {});
+      }
     }
   }
 
@@ -343,7 +348,10 @@ class _HomePageState extends State<HomePage> {
         espConnected = true;
         failCount = 0;
       }
-    } catch (_) {}
+    } catch (e) {
+      _lastError = 'Failed to send GPS: $e';
+      if (mounted) setState(() {});
+    }
 
     sendingGps = false;
   }
@@ -358,7 +366,12 @@ class _HomePageState extends State<HomePage> {
         timeout: const Duration(seconds: kBleScanDurationSec),
         androidUsesFineLocation: true,
       );
-    } catch (_) {}
+    } catch (e) {
+      if (!e.toString().toLowerCase().contains('timeout')) {
+        _lastError = 'BLE Scan Error: $e';
+        if (mounted) setState(() {});
+      }
+    }
   }
 
   void handleScanResults(List<ScanResult> results) {
@@ -409,6 +422,8 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       clearArmband();
+      _lastError = 'Armband Connect Error: $e';
+      if (mounted) setState(() {});
     }
   }
 
@@ -473,7 +488,10 @@ class _HomePageState extends State<HomePage> {
         espConnected = true;
         failCount = 0;
       }
-    } catch (_) {}
+    } catch (e) {
+      _lastError = 'Failed to send BPM: $e';
+      if (mounted) setState(() {});
+    }
 
     sendingBpm = false;
   }
@@ -566,7 +584,10 @@ class _HomePageState extends State<HomePage> {
         lastSuccessfulEsp = DateTime.now();
         return true;
       }
-    } catch (_) {}
+    } catch (e) {
+      _lastError = 'ESP32 Post Error: $e';
+      if (mounted) setState(() {});
+    }
 
     return false;
   }
@@ -701,6 +722,10 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Climber Safety'),
         backgroundColor: const Color(0xFF0F172A),
         foregroundColor: Colors.white,
+        actions: [
+          _buildIndicators(),
+          const SizedBox(width: 14),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -713,6 +738,26 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(14),
           children: [
             statusPanel(),
+            if (_lastError.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.red.shade100, borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(_lastError, style: const TextStyle(color: Colors.red))),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      onPressed: () => setState(() => _lastError = ''),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    )
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             simpleGrid([
               item('Distance', formatDistance(status.distanceToBaseM), Icons.route),
@@ -798,7 +843,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 TileLayer(
                   // To use strict offline mode, change this to an AssetTileProvider pointing to your .mbtiles
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                   userAgentPackageName: 'com.climber.app',
                 ),
                 PolylineLayer(
@@ -902,12 +947,12 @@ class _HomePageState extends State<HomePage> {
               margin: const EdgeInsets.symmetric(vertical: 4),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isMe ? const Color(0xFFFFE4E6) : const Color(0xFFDBEAFE),
+                color: isMe ? const Color(0xFF115E59) : const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 '${m.from} • ${m.time}\n${m.text}',
-                style: const TextStyle(fontWeight: FontWeight.w500),
+                style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
               ),
             );
           }),
@@ -971,28 +1016,57 @@ class _HomePageState extends State<HomePage> {
   Widget sosPanel() {
     return Column(
       children: [
-        SizedBox(
-          height: 56,
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: sendingMessage ? null : sendSos,
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
+        Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              if (status.sos == 1)
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.6),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                )
+              else
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.3),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                ),
+            ],
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: SizedBox(
+            height: 56,
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: sendingMessage ? null : sendSos,
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFE11D48),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+              ),
+              icon: const Icon(Icons.warning, size: 28),
+              label: const Text('SEND SOS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             ),
-            icon: const Icon(Icons.warning),
-            label: const Text('SEND SOS'),
           ),
         ),
         if (status.sos == 1) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           SizedBox(
             height: 50,
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: sendingMessage ? null : clearSos,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+              ),
               icon: const Icon(Icons.check_circle),
-              label: const Text('CLEAR SOS'),
+              label: const Text('CLEAR SOS', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -1048,14 +1122,14 @@ class _HomePageState extends State<HomePage> {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
           ),
           const SizedBox(height: 2),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ],
       ),
@@ -1075,9 +1149,9 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF0F172A)),
+              Icon(icon, color: Colors.tealAccent),
               const SizedBox(width: 8),
-              Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
             ],
           ),
           const SizedBox(height: 10),
@@ -1099,7 +1173,7 @@ class _HomePageState extends State<HomePage> {
               left,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Color(0xFF64748B)),
+              style: const TextStyle(color: Color(0xFF94A3B8)),
             ),
           ),
           const SizedBox(width: 10),
@@ -1110,7 +1184,7 @@ class _HomePageState extends State<HomePage> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),
         ],
@@ -1120,8 +1194,46 @@ class _HomePageState extends State<HomePage> {
 
   BoxDecoration cardDecoration() {
     return BoxDecoration(
-      color: Colors.white,
+      color: const Color(0xFF1E293B),
       borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        )
+      ],
+    );
+  }
+
+  Widget _buildIndicators() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _dot(espConnected ? Colors.green : Colors.red, 'ESP'),
+        const SizedBox(width: 8),
+        _dot(armbandSeen ? Colors.green : Colors.red, 'BLE'),
+        const SizedBox(width: 8),
+        _dot(
+          status.gpsCurrentFix ? Colors.green : (status.hasLastKnownLocation ? Colors.yellow : Colors.red),
+          'GPS'
+        ),
+      ],
+    );
+  }
+
+  Widget _dot(Color color, String label) {
+    return Tooltip(
+      message: label,
+      child: Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 1),
+        ),
+      ),
     );
   }
 }
