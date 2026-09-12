@@ -1,4 +1,5 @@
 Flask>=3.0.0
 pyserial>=3.5
 pytest>=7.0.0
+pytest-mock>=3.14.0
 pyinstaller
