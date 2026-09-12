@@ -2,6 +2,8 @@
 
 #include <LoRa.h>
 
+#include <esp_task_wdt.h>
+
 
 
 // ===================== BASECAMP ESP32 LoRa <-> USB BRIDGE =====================
@@ -507,6 +509,9 @@ void setup() {
 
   delay(800);
 
+  esp_task_wdt_init(8, true);
+  esp_task_wdt_add(NULL);
+
 
 
   SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
@@ -519,9 +524,12 @@ void setup() {
 
     printError("LoRa failed");
 
-    while (true) delay(1000);
+    delay(5000);
+    ESP.restart();
 
   }
+
+  LoRa.enableCrc();
 
 
 
@@ -544,6 +552,7 @@ void setup() {
 
 
 void loop() {
+  esp_task_wdt_reset();
 
   readLoRaPackets();
 

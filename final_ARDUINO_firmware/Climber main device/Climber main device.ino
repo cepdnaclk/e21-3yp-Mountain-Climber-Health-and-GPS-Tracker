@@ -7,6 +7,16 @@
 #include <SSD1306AsciiWire.h>
 #include <TinyGPSPlus.h>
 #include <math.h>
+#include <esp_task_wdt.h>
+#include <ArduinoOTA.h>
+#include <WebServer.h>
+#include <SPI.h>
+#include <LoRa.h>
+#include <Wire.h>
+#include <SSD1306Ascii.h>
+#include <SSD1306AsciiWire.h>
+#include <TinyGPSPlus.h>
+#include <math.h>
 
 // ==========================================================
 // SIMPLE + STABLE MAIN CLIMBER ESP32 CODE
@@ -14,7 +24,9 @@
 // ==========================================================
 
 // ---------- IDs / Wi-Fi ----------
-#define ID "CLIMBER01"
+#define FW_VERSION "1.0.0"
+String deviceId;
+#define ID deviceId
 const char* AP_SSID = "CLIMBER_01";
 const char* AP_PASS = "12345678";
 
@@ -74,6 +86,7 @@ bool oledOK = false;
 
 float lat = 0, lon = 0, alt = 0;
 float lastLat = 0, lastLon = 0, lastAlt = 0;
+float lastSentLat = 0, lastSentLon = 0;
 bool hasLast = false;
 
 String gpsSrc = "NO_GPS";
@@ -398,7 +411,15 @@ void startLoRa() {
     LoRa.setSignalBandwidth(125E3);
     LoRa.setCodingRate4(5);
     LoRa.setTxPower(17);
+    LoRa.enableCrc();
     LoRa.receive();
+  }
+}
+
+void waitForClearChannel() {
+  int attempts = 10;
+  while (LoRa.parsePacket() > 0 && attempts-- > 0) {
+    delay(random(50, 200));
   }
 }
 
@@ -408,6 +429,7 @@ void sendLoRa(String p, bool repeat = false) {
 
   int n = repeat ? 2 : 1;
   for (int i = 0; i < n; i++) {
+    waitForClearChannel();
     LoRa.idle();
     LoRa.beginPacket();
     LoRa.print(p);
@@ -457,7 +479,7 @@ void sendTelemetry() {
              ",TO:BASE" +
              ",SEQ:" + String(seq) +
              ",MID:" + String(ID) + "-D-" + String(seq) +
-             ",HOP:0" +
+             ",HOP:0,TTL:3" +
              ",LAT:" + String(showLat(), 6) +
              ",LON:" + String(showLon(), 6) +
              ",ALT:" + String(alt, 1) +
@@ -487,7 +509,7 @@ void sendEvent(String type, String text) {
              ",FROM:" + String(ID) +
              ",TO:BASE" +
              ",MID:" + eventMid +
-             ",HOP:0" +
+             ",HOP:0,TTL:3" +
              ",TEXT:" + text +
              ",SOS:" + String(sos);
   sendLoRa(p, true);
@@ -632,13 +654,14 @@ void hdr() {
 
 void root() {
   hdr();
-  server.send(200, "text/plain", "CLIMBER OK");
+  server.send(200, "text/plain", F("CLIMBER OK"));
 }
 
 void status() {
   hdr();
 
   String s = "{";
+  s += "\"version\":\"" + String(FW_VERSION) + "\",";
   s += "\"id\":\"" + String(ID) + "\",";
   s += "\"lat\":" + String(lat, 6) + ",";
   s += "\"lon\":" + String(lon, 6) + ",";
@@ -681,7 +704,7 @@ void status() {
 void postGps() {
   hdr();
   if (!server.hasArg("plain")) {
-    server.send(400, "application/json", "{\"error\":\"no_body\"}");
+    server.send(400, "application/json", F("{\"error\":\"no_body\"}"));
     return;
   }
 
@@ -694,13 +717,13 @@ void postGps() {
            "PHONE");
   }
 
-  server.send(200, "application/json", "{\"status\":\"ok\"}");
+  server.send(200, "application/json", F("{\"status\":\"ok\"}"));
 }
 
 void postBpm() {
   hdr();
   if (!server.hasArg("plain")) {
-    server.send(400, "application/json", "{\"error\":\"no_body\"}");
+    server.send(400, "application/json", F("{\"error\":\"no_body\"}"));
     return;
   }
 
@@ -749,7 +772,7 @@ void postBpm() {
 void postMsg() {
   hdr();
   if (!server.hasArg("plain")) {
-    server.send(400, "application/json", "{\"error\":\"no_body\"}");
+    server.send(400, "application/json", F("{\"error\":\"no_body\"}"));
     return;
   }
 
@@ -757,12 +780,12 @@ void postMsg() {
   msg.trim();
 
   if (!msg.length()) {
-    server.send(400, "application/json", "{\"error\":\"empty\"}");
+    server.send(400, "application/json", F("{\"error\":\"empty\"}"));
     return;
   }
 
   lastSentMsg = msg;
-  server.send(200, "application/json", "{\"status\":\"queued\"}");
+  server.send(200, "application/json", F("{\"status\":\"queued\"}"));
   delay(2);
   sendEvent("MSG", msg);
 }
@@ -771,7 +794,7 @@ void postSos() {
   hdr();
   sos = 1;
   lastSentMsg = "SOS";
-  server.send(200, "application/json", "{\"status\":\"sos\"}");
+  server.send(200, "application/json", F("{\"status\":\"sos\"}"));
   delay(2);
   sendEvent("SOS", "SOS");
 }
@@ -780,7 +803,7 @@ void postClear() {
   hdr();
   sos = 0;
   lastSentMsg = "SOS cleared";
-  server.send(200, "application/json", "{\"status\":\"clear\"}");
+  server.send(200, "application/json", F("{\"status\":\"clear\"}"));
   delay(2);
   sendEvent("SOS_CLEAR", "SOS cleared");
 }
@@ -846,9 +869,22 @@ void buttons() {
 // ==========================================================
 // Setup / loop
 // ==========================================================
+String getDeviceID() {
+  uint8_t mac[6];
+  esp_read_mac(mac, ESP_MAC_WIFI_STA);
+  char id[16];
+  snprintf(id, sizeof(id), "CLM-%02X%02X", mac[4], mac[5]);
+  return String(id);
+}
+
 void setup() {
   Serial.begin(115200);
   delay(500);
+  
+  esp_task_wdt_init(8, true);
+  esp_task_wdt_add(NULL);
+  
+  deviceId = getDeviceID();
 
   pinMode(BTN_SOS, INPUT_PULLUP);
   pinMode(BTN_CLEAR, INPUT_PULLUP);
@@ -861,7 +897,7 @@ void setup() {
   gpsSerial.begin(9600, SERIAL_8N1, GPS_RX, GPS_TX);
 
   WiFi.mode(WIFI_AP);
-  WiFi.setSleep(false);
+  WiFi.setSleep(WIFI_PS_MAX_MODEM);
   WiFi.softAP(AP_SSID, AP_PASS);
 
   startServer();
@@ -872,9 +908,14 @@ void setup() {
   drawOLED();
   lastTelMs = millis();
   lastOledMs = millis();
+  
+  ArduinoOTA.begin();
 }
 
 void loop() {
+  esp_task_wdt_reset();
+  ArduinoOTA.handle();
+
   server.handleClient();
 
   readGPS();
@@ -885,8 +926,17 @@ void loop() {
   uint32_t t = millis();
   uint32_t interval = sos ? SOS_TEL_MS : TEL_MS;
 
+  // Adaptive telemetry
+  if (!sos) {
+    if (distM(lat, lon, lastSentLat, lastSentLon) <= 2.0) {
+      interval = 30000;
+    }
+  }
+
   if (t - lastTelMs >= interval) {
     lastTelMs = t;
+    lastSentLat = lat;
+    lastSentLon = lon;
     sendTelemetry();
   }
 

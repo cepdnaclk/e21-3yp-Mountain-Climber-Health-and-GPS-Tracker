@@ -49,6 +49,14 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to your location to provide GPS coordinates to the Climber tracking device when the hardware GPS has no fix.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs background location access to continuously relay GPS data to the Climber tracking device during expeditions.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app needs Bluetooth access to connect to the Climber Armband for heart rate and health monitoring.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>This app needs Bluetooth access to communicate with the Climber Armband wearable device.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
