@@ -7,6 +7,10 @@ repository-name: e21-3yp-Mountain-Climber-Health-and-GPS-Tracker
 title: Mountain Climber IoT Safety Tracking System
 ---
 
+<link rel="stylesheet" href="./assets/css/style.css">
+
+<div class="wrapper"> <!-- Start of wrapper for better readability -->
+
 # Mountain Climber IoT Safety Tracking System
 
 <p align="center">
@@ -21,6 +25,10 @@ title: Mountain Climber IoT Safety Tracking System
   <img src="https://img.shields.io/badge/Dashboard-Flask%20%2B%20Leaflet-lightgrey" alt="Flask Dashboard">
   <img src="https://img.shields.io/badge/Mobile%20App-Flutter-blueviolet" alt="Flutter Mobile App">
   <img src="https://img.shields.io/badge/Portal-Next.js%2016-black" alt="Next.js Portal">
+</p>
+
+<p align="center">
+  <strong>🛒 <a href="https://summit-gear-portal.vercel.app" target="_blank">View the Live E-Commerce Portal (Summit Gear)</a></strong>
 </p>
 
 ---
@@ -46,6 +54,13 @@ title: Mountain Climber IoT Safety Tracking System
 
 ---
 
+## 🎥 Project Demonstration
+
+[![Watch the video](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://youtu.be/YOUR_VIDEO_ID)
+*(Edit this README to replace YOUR_VIDEO_ID with your actual YouTube video ID)*
+
+---
+
 ## Overview
 
 The **Mountain Climber IoT Safety Tracking System** is a comprehensive embedded and IoT-based project developed at the Department of Computer Engineering, University of Peradeniya (CO328 / 3YP, Group 23). It provides real-time GPS tracking, SOS emergency alerts, two-way messaging, health monitoring, and basecamp rescue coordination for climbers operating in remote environments where cellular networks are unavailable.
@@ -56,10 +71,11 @@ The **Mountain Climber IoT Safety Tracking System** is a comprehensive embedded 
 
 Mountain climbers and expedition teams face critical communication challenges in remote environments:
 
-- **No cellular coverage** in mountainous terrain, deep valleys, and high altitudes
-- **Limited satellite options** are expensive ($400+ hardware, $15-65/month subscriptions)
-- **No integrated health monitoring** in existing off-grid communication devices
-- **No affordable mesh networking** for extending coverage around ridges and obstacles
+> [!WARNING]  
+> **No cellular coverage** in mountainous terrain, deep valleys, and high altitudes.
+
+> [!IMPORTANT]  
+> **Limited satellite options** are expensive ($400+ hardware, $15-65/month subscriptions) and **no integrated health monitoring** exists in current off-grid devices.
 
 ---
 
@@ -215,6 +231,9 @@ BPM:72,ABAT:90,RSSI:-45,SNR:8.5,GPS:FIX,SAT:8,SEQ:42,TTL:3
 
 ## Web Dashboard
 
+![Basecamp Dashboard](images/dashboard.png)
+*(Drop your dashboard screenshot in `docs/images/dashboard.png`)*
+
 The basecamp web dashboard provides real-time monitoring and rescue coordination:
 
 - **Multi-climber tracking** with individual cards showing GPS, battery, SOS status, and health data
@@ -228,6 +247,9 @@ The basecamp web dashboard provides real-time monitoring and rescue coordination
 
 ## Mobile Application
 
+![Mobile App](images/mobile-app.png)
+*(Drop your mobile app screenshot in `docs/images/mobile-app.png`)*
+
 The Flutter companion app connects to the climber device via WiFi SoftAP:
 
 - **Status dashboard** with color-coded safety banner (Green/Orange/Red/Grey)
@@ -240,6 +262,9 @@ The Flutter companion app connects to the climber device via WiFi SoftAP:
 ---
 
 ## Summit Gear Commercial Portal
+
+![Summit Gear Portal](images/portal.png)
+*(Drop your e-commerce portal screenshot in `docs/images/portal.png`)*
 
 A Next.js web application providing full device lifecycle management:
 
@@ -343,3 +368,5 @@ This project is developed as part of the undergraduate third-year engineering pr
   Department of Computer Engineering<br>
   Faculty of Engineering, University of Peradeniya
 </p>
+
+</div> <!-- End of wrapper -->
