@@ -14,19 +14,30 @@ permalink: index.html
   
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <style>
-    .hardware-img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 20px; border-radius: 8px; }
-    .screenshot-img { width: 100%; display: block; border-radius: var(--radius-lg); border: 1px solid var(--border); }
-    .avatar-img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin: 0 auto 15px auto; border: 3px solid var(--border); transition: border-color 0.3s; }
-    .card:hover .avatar-img { border-color: var(--accent); }
-  </style>
 </head>
 <body>
 
+  <!-- TOP NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="#" class="navbar-brand">
+        <!-- Logo Placeholder -->
+        <img src="images/logo.png" alt="Logo" class="navbar-logo" onerror="this.src='https://via.placeholder.com/32x32/0d9488/ffffff?text=L'">
+        Summit Tracker
+      </a>
+      <div class="navbar-links">
+        <a href="#intro">Intro</a>
+        <a href="#showcase">Products</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#team">Team</a>
+      </div>
+    </div>
+  </nav>
+
   <!-- HERO SECTION -->
-  <header class="hero">
-    <h1>Summit Tracker</h1>
-    <p>An off-grid IoT-based safety tracking, health monitoring, and emergency communication system for mountain climbers and basecamp rescue teams.</p>
+  <header class="hero" id="intro">
+    <h1>Mountain Climber IoT Safety Tracking System</h1>
+    <p>An off-grid IoT-based safety tracking, health monitoring, and emergency communication system designed for mountain climbers and basecamp rescue teams operating outside cellular coverage.</p>
     
     <div class="btn-group">
       <a href="https://youtu.be/YOUR_VIDEO_ID" target="_blank" class="btn btn-primary">
@@ -38,98 +49,97 @@ permalink: index.html
     </div>
   </header>
 
-  <!-- ARCHITECTURE DIAGRAM -->
-  <section class="section" style="background: var(--bg-secondary);">
+  <!-- PRODUCT SHOWCASE (Placeholders) -->
+  <section class="section" id="showcase" style="padding-top: 0;">
+    <div class="container">
+      <h2 class="section-title">Product Showcase</h2>
+      <p class="section-desc">Hardware designed for extreme alpine environments, backed by a robust software suite.</p>
+      
+      <div class="grid-2">
+        <!-- Physical Devices Placeholders -->
+        <div class="card text-center">
+          <img src="images/climber-node.png" alt="Climber Node" class="placeholder-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+Climber+Node.png'">
+          <h3><i class="ph ph-cpu text-accent"></i> Climber Hub</h3>
+        </div>
+        <div class="card text-center">
+          <img src="images/ble-watch.png" alt="Wristband" class="placeholder-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+BLE-Watch.png'">
+          <h3><i class="ph ph-watch text-accent"></i> Health Wristband</h3>
+        </div>
+        
+        <!-- Software Placeholders -->
+        <div class="card text-center">
+          <img src="images/dashboard.png" alt="Dashboard" class="placeholder-img" style="height: 200px; object-fit: cover; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+Dashboard.png'">
+          <h3><i class="ph ph-desktop text-accent"></i> Rescue Dashboard</h3>
+        </div>
+        <div class="card text-center">
+          <img src="images/mobile-app.png" alt="Mobile App" class="placeholder-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+Mobile-App.png'">
+          <h3><i class="ph ph-device-mobile text-accent"></i> Companion App</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFESSIONAL DETAILS (Architecture & Features) -->
+  <section class="section" id="architecture" style="background: var(--bg-secondary);">
     <div class="container">
       <h2 class="section-title">System Architecture</h2>
       <p class="section-desc">How data flows from the climber's wrist to the basecamp dashboard entirely off-grid.</p>
       
-      <div class="card" style="text-align: center;">
-        <h3 style="color: var(--accent); margin-bottom: 20px; justify-content: center;">
-          <i class="ph ph-watch"></i> Wristband (BLE) &rarr; 
-          <i class="ph ph-device-mobile"></i> Mobile App (WiFi) &rarr; 
-          <i class="ph ph-cpu"></i> Climber ESP32 (LoRa) &rarr; 
-          <i class="ph ph-broadcast"></i> Repeater (LoRa) &rarr; 
-          <i class="ph ph-desktop"></i> Basecamp Dashboard
+      <div class="card text-center mb-4">
+        <h3 class="text-accent" style="justify-content: center; margin-bottom: 15px;">
+          Wristband &rarr; Mobile App &rarr; Climber Node &rarr; Repeater &rarr; Basecamp
         </h3>
-        <p style="color: var(--text-secondary);">The system relies on a 433MHz LoRa mesh network for 15km+ range, entirely bypassing expensive satellite networks or unavailable cellular coverage.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- HARDWARE COMPONENTS -->
-  <section class="section">
-    <div class="container">
-      <h2 class="section-title">Physical Products</h2>
-      <p class="section-desc">Hardware designed for extreme alpine environments.</p>
-      
-      <div class="grid-2">
-        <div class="card">
-          <img src="images/climber-node.png" alt="Climber Node" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Climber+Node'">
-          <h3>Climber Main Device</h3>
-          <p>ESP32 + SX1278 LoRa + NEO-6M GPS. Worn on the backpack, acts as the central hub.</p>
-        </div>
-        <div class="card">
-          <img src="images/ble-watch.png" alt="Health Wristband" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Health+Wristband'">
-          <h3>Health Wristband</h3>
-          <p>ESP32-H2 + MAX30102. Relays heart rate over BLE to the mobile app.</p>
-        </div>
-        <div class="card">
-          <img src="images/repeater-node.png" alt="LoRa Repeater" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=LoRa+Repeater'">
-          <h3>LoRa Repeater</h3>
-          <p>Autonomous mesh node that re-transmits packets to extend range over ridges.</p>
-        </div>
-        <div class="card">
-          <img src="images/basecamp-node.png" alt="Basecamp Receiver" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Basecamp+Receiver'">
-          <h3>Basecamp Receiver</h3>
-          <p>USB-serial bridge linking the LoRa network directly to the rescue coordinator's laptop.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SOFTWARE SCREENSHOTS -->
-  <section class="section" style="background: var(--bg-secondary);">
-    <div class="container">
-      <h2 class="section-title">Software Suite</h2>
-      <p class="section-desc">Fully integrated from the mountain to the cloud.</p>
-      
-      <h3 class="text-accent" style="margin-bottom: 10px;">Basecamp Dashboard (Flask + Leaflet)</h3>
-      <div class="screenshot-container">
-        <img src="images/dashboard.png" alt="Dashboard Placeholder" class="screenshot-img" onerror="this.src='https://via.placeholder.com/1000x500/090e17/0d9488?text=Replace+with+images/dashboard.png'">
+        <p>The system relies on a 433MHz LoRa mesh network for 15km+ range, completely bypassing expensive satellite networks ($400+ hardware, $15-65/month subscriptions) and resolving the critical issue of zero cellular coverage in deep valleys.</p>
       </div>
 
-      <h3 class="text-accent" style="margin-bottom: 10px;">Climber Mobile App (Flutter)</h3>
-      <div class="screenshot-container" style="max-width: 400px; margin: 0 auto 40px auto;">
-        <img src="images/mobile-app.png" alt="Mobile App Placeholder" class="screenshot-img" onerror="this.src='https://via.placeholder.com/400x800/090e17/0d9488?text=Replace+with+images/mobile-app.png'">
-      </div>
-
-      <h3 class="text-accent" style="margin-bottom: 10px;">Summit Gear Portal (Next.js + Supabase)</h3>
-      <div class="screenshot-container">
-        <img src="images/portal.png" alt="Portal Placeholder" class="screenshot-img" onerror="this.src='https://via.placeholder.com/1000x500/090e17/0d9488?text=Replace+with+images/portal.png'">
+      <div class="grid-3 mt-4">
+        <div class="card">
+          <h3><i class="ph ph-crosshair text-accent"></i> Smart GPS Filtering</h3>
+          <p>Rejects GPS jitter, teleport jumps, and low-satellite anomalies. Mobile phone GPS acts as an automatic fallback.</p>
+        </div>
+        <div class="card">
+          <h3><i class="ph ph-warning text-accent"></i> Accelerated SOS</h3>
+          <p>Dedicated hardware panic button immediately triggers 1-second interval telemetry with maximum transmission priority.</p>
+        </div>
+        <div class="card">
+          <h3><i class="ph ph-heartbeat text-accent"></i> Vitals Monitoring</h3>
+          <p>Continuous heart rate monitoring via a custom ESP32-H2 BLE wearable, relayed straight to the rescue dashboard.</p>
+        </div>
+        <div class="card">
+          <h3><i class="ph ph-chat-text text-accent"></i> Two-Way Messaging</h3>
+          <p>Send and receive critical text messages between basecamp and the mobile app via the LoRa hardware bridge.</p>
+        </div>
+        <div class="card">
+          <h3><i class="ph ph-network text-accent"></i> Mesh Networking</h3>
+          <p>Autonomous repeater nodes extend signal over mountain ridges using smart TTL-limited multi-hop routing.</p>
+        </div>
+        <div class="card">
+          <h3><i class="ph ph-shield-check text-accent"></i> Commercial Portal</h3>
+          <p>Full e-commerce platform (Next.js) for device purchasing, device registration, and secure OTA firmware distribution.</p>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- TEAM & SUPERVISION -->
-  <section class="section">
+  <section class="section" id="team">
     <div class="container">
       <h2 class="section-title">The Team</h2>
       <p class="section-desc">Group 23 • CO328 / 3YP • Dept. of Computer Engineering, UoP</p>
       
       <div class="grid-3">
         <div class="card team-member">
-          <img src="images/sahan.png" alt="Sahan" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Sahan'">
+          <img src="images/sahan.png" alt="Sahan" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Drop+Sahan.png'">
           <h3 style="justify-content: center;">Sahan Jayasundara</h3>
           <p class="team-role">E/21/198</p>
         </div>
         <div class="card team-member">
-          <img src="images/prabash.png" alt="Prabash" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Prabash'">
+          <img src="images/prabash.png" alt="Prabash" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Drop+Prabash.png'">
           <h3 style="justify-content: center;">Prabash Rathnayaka</h3>
           <p class="team-role">E/21/328</p>
         </div>
         <div class="card team-member">
-          <img src="images/pasan.png" alt="Pasan" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Pasan'">
+          <img src="images/pasan.png" alt="Pasan" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Drop+Pasan.png'">
           <h3 style="justify-content: center;">Pasan Sandeep</h3>
           <p class="team-role">E/21/353</p>
         </div>
@@ -139,11 +149,11 @@ permalink: index.html
         <h3 class="text-accent" style="justify-content: center; margin-bottom: 30px; font-size: 1.5rem;">Academic Supervision</h3>
         <div class="grid-2" style="max-width: 600px; margin: 0 auto 30px auto; gap: 40px;">
           <div class="team-member">
-            <img src="images/yashodha.png" alt="Ms. Yashodha" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Ms.+Yashodha'">
+            <img src="images/yashodha.png" alt="Ms. Yashodha" class="avatar-img" style="border: none;" onerror="this.src='https://via.placeholder.com/150x150/090e17/0d9488?text=Drop+Yashodha.png'">
             <p style="color: var(--text-primary); font-size: 1.15rem; font-weight: 500;">Ms. Yashodha Vimukthi</p>
           </div>
           <div class="team-member">
-            <img src="images/thiliru.png" alt="Mr. Thiliru" class="avatar-img" onerror="this.src='https://via.placeholder.com/150x150/0f1629/0d9488?text=Mr.+Thiliru'">
+            <img src="images/thiliru.png" alt="Mr. Thiliru" class="avatar-img" style="border: none;" onerror="this.src='https://via.placeholder.com/150x150/090e17/0d9488?text=Drop+Thiliru.png'">
             <p style="color: var(--text-primary); font-size: 1.15rem; font-weight: 500;">Mr. Thiliru Samaradiwakara</p>
           </div>
         </div>
