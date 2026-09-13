@@ -27,14 +27,16 @@ permalink: index.html
       </a>
       <div class="navbar-links">
         <a href="#intro">Intro</a>
-        <a href="#showcase">Products</a>
         <a href="#architecture">Architecture</a>
+        <a href="#hardware">Hardware</a>
+        <a href="#software">Software & Portal</a>
+        <a href="#budget">Budget</a>
         <a href="#team">Team</a>
       </div>
     </div>
   </nav>
 
-  <!-- HERO SECTION -->
+  <!-- HERO SECTION & OBJECTIVES -->
   <header class="hero" id="intro">
     <h1>Mountain Climber IoT Safety Tracking System</h1>
     <p>An off-grid IoT-based safety tracking, health monitoring, and emergency communication system designed for mountain climbers and basecamp rescue teams operating outside cellular coverage.</p>
@@ -49,31 +51,16 @@ permalink: index.html
     </div>
   </header>
 
-  <!-- PRODUCT SHOWCASE (Placeholders) -->
-  <section class="section" id="showcase" style="padding-top: 0;">
+  <section class="section" style="padding-top: 20px;">
     <div class="container">
-      <h2 class="section-title">Product Showcase</h2>
-      <p class="section-desc">Hardware designed for extreme alpine environments, backed by a robust software suite.</p>
-      
       <div class="grid-2">
-        <!-- Physical Devices Placeholders -->
-        <div class="card text-center">
-          <img src="images/climber-node.png" alt="Climber Node" class="placeholder-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+Climber+Node.png'">
-          <h3><i class="ph ph-cpu text-accent"></i> Climber Hub</h3>
+        <div class="card">
+          <h3 class="text-accent"><i class="ph ph-warning"></i> Problem Statement</h3>
+          <p>Mountain climbers often venture into deep valleys and dense forests where cellular coverage is non-existent. Current solutions rely on Satellite Phones or Garmin InReach devices, which require $400+ in hardware and $15-$65/month in subscription fees, making them inaccessible to amateur climbers.</p>
         </div>
-        <div class="card text-center">
-          <img src="images/ble-watch.png" alt="Wristband" class="placeholder-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+BLE-Watch.png'">
-          <h3><i class="ph ph-watch text-accent"></i> Health Wristband</h3>
-        </div>
-        
-        <!-- Software Placeholders -->
-        <div class="card text-center">
-          <img src="images/dashboard.png" alt="Dashboard" class="placeholder-img" style="height: 200px; object-fit: cover; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+Dashboard.png'">
-          <h3><i class="ph ph-desktop text-accent"></i> Rescue Dashboard</h3>
-        </div>
-        <div class="card text-center">
-          <img src="images/mobile-app.png" alt="Mobile App" class="placeholder-img" style="height: 200px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Drop+Mobile-App.png'">
-          <h3><i class="ph ph-device-mobile text-accent"></i> Companion App</h3>
+        <div class="card">
+          <h3 class="text-accent"><i class="ph ph-target"></i> Core Objectives</h3>
+          <p>We aim to build a completely free-to-operate, off-grid mesh network using 433MHz LoRa technology. It provides real-time GPS tracking, heart-rate monitoring, and two-way SOS messaging between climbers and basecamp without relying on any external infrastructure.</p>
         </div>
       </div>
     </div>
@@ -89,7 +76,9 @@ permalink: index.html
         <h3 class="text-accent" style="justify-content: center; margin-bottom: 15px;">
           Wristband &rarr; Mobile App &rarr; Climber Node &rarr; Repeater &rarr; Basecamp
         </h3>
-        <p>The system relies on a 433MHz LoRa mesh network for 15km+ range, completely bypassing expensive satellite networks ($400+ hardware, $15-65/month subscriptions) and resolving the critical issue of zero cellular coverage in deep valleys.</p>
+        <div class="screenshot-container" style="max-width: 800px; margin: 0 auto;">
+          <img src="images/architecture.png" alt="Architecture Diagram" class="placeholder-img" style="border: none; min-height: 300px;" onerror="this.src='https://via.placeholder.com/800x300/090e17/0d9488?text=Upload+architecture.png+here'">
+        </div>
       </div>
 
       <div class="grid-3 mt-4">
@@ -114,9 +103,159 @@ permalink: index.html
           <p>Autonomous repeater nodes extend signal over mountain ridges using smart TTL-limited multi-hop routing.</p>
         </div>
         <div class="card">
-          <h3><i class="ph ph-shield-check text-accent"></i> Commercial Portal</h3>
-          <p>Full e-commerce platform (Next.js) for device purchasing, device registration, and secure OTA firmware distribution.</p>
+          <h3><i class="ph ph-shield-check text-accent"></i> Firmware OTA</h3>
+          <p>The companion app fetches the latest secure firmware from our cloud portal and flashes it to the hardware via Bluetooth.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HARDWARE SHOWCASE -->
+  <section class="section" id="hardware">
+    <div class="container">
+      <h2 class="section-title">Hardware Design</h2>
+      <p class="section-desc">Rugged IoT nodes designed for extreme alpine environments.</p>
+      
+      <div class="grid-4">
+        <div class="card text-center">
+          <img src="images/climber-node.png" alt="Climber Node" class="placeholder-img" style="height: 150px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/200x150/0f1629/0d9488?text=Drop+Climber+Node.png'">
+          <h3><i class="ph ph-cpu text-accent"></i> Climber Hub</h3>
+        </div>
+        <div class="card text-center">
+          <img src="images/ble-watch.png" alt="Wristband" class="placeholder-img" style="height: 150px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/200x150/0f1629/0d9488?text=Drop+BLE-Watch.png'">
+          <h3><i class="ph ph-watch text-accent"></i> Wristband</h3>
+        </div>
+        <div class="card text-center">
+          <img src="images/repeater-node.png" alt="Repeater Node" class="placeholder-img" style="height: 150px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/200x150/0f1629/0d9488?text=Drop+Repeater.png'">
+          <h3><i class="ph ph-broadcast text-accent"></i> Repeater</h3>
+        </div>
+        <div class="card text-center">
+          <img src="images/basecamp-node.png" alt="Basecamp Node" class="placeholder-img" style="height: 150px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='https://via.placeholder.com/200x150/0f1629/0d9488?text=Drop+Basecamp.png'">
+          <h3><i class="ph ph-desktop text-accent"></i> Basecamp</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOFTWARE & PORTAL SHOWCASE -->
+  <section class="section" id="software" style="background: var(--bg-secondary);">
+    <div class="container">
+      <h2 class="section-title">Software Suite & Portal</h2>
+      <p class="section-desc">A full-stack ecosystem linking the hardware to the cloud and rescue teams.</p>
+      
+      <div class="grid-2 mb-4">
+        <div class="card">
+          <h3 class="text-accent mb-4">Rescue Dashboard (Flask + Leaflet)</h3>
+          <p style="margin-bottom: 20px;">A localized Python application running on the Rescue Coordinator's laptop. It reads raw LoRa telemetry over Serial, parsing GPS coordinates and plotting live climber positions onto an offline-capable Leaflet map. Handles SOS alerts and two-way messaging.</p>
+          <div class="screenshot-container">
+            <img src="images/dashboard.png" alt="Dashboard" class="placeholder-img" style="height: 250px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/600x250/090e17/0d9488?text=Upload+dashboard.png'">
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-accent mb-4">Companion App (Flutter)</h3>
+          <p style="margin-bottom: 20px;">A cross-platform mobile app that connects to the climber's hardware via Bluetooth. Provides an interactive UI for sending text messages, viewing connection status, syncing health vitals, and executing OTA firmware updates.</p>
+          <div class="screenshot-container">
+            <img src="images/mobile-app.png" alt="Mobile App" class="placeholder-img" style="height: 250px; object-fit: contain;" onerror="this.src='https://via.placeholder.com/300x250/090e17/0d9488?text=Upload+mobile-app.png'">
+          </div>
+        </div>
+      </div>
+
+      <!-- PORTAL SPOTLIGHT -->
+      <div class="card text-center mt-4" style="border: 1px solid var(--accent);">
+        <h3 class="text-accent" style="justify-content: center; font-size: 1.5rem; margin-bottom: 15px;">Summit Gear Portal</h3>
+        <p style="max-width: 800px; margin: 0 auto 30px auto;">A modern commercial web portal built with Next.js, Tailwind, and Supabase. It serves as the e-commerce storefront for purchasing Summit Tracker devices, managing user registrations, and securely distributing the latest OTA firmware updates.</p>
+        <div class="screenshot-container">
+          <img src="images/portal.png" alt="Portal Screenshot" class="placeholder-img" style="height: 400px; object-fit: cover; border: none;" onerror="this.src='https://via.placeholder.com/1000x400/090e17/0d9488?text=Upload+portal.png'">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTING & RESULTS -->
+  <section class="section" id="testing">
+    <div class="container">
+      <h2 class="section-title">Testing & Results</h2>
+      <p class="section-desc">Validating the system in real-world scenarios.</p>
+      
+      <div class="grid-2">
+        <div class="card text-center">
+          <div class="screenshot-container">
+            <img src="images/testing-lora.png" alt="LoRa Testing" class="placeholder-img" style="height: 250px; border: none;" onerror="this.src='https://via.placeholder.com/400x250/0f1629/0d9488?text=Upload+testing-lora.png'">
+          </div>
+          <h3>LoRa Range Testing</h3>
+          <p>Testing line-of-sight and non-line-of-sight communication distances using various spreading factors and antennas.</p>
+        </div>
+        <div class="card text-center">
+          <div class="screenshot-container">
+            <img src="images/testing-vitals.png" alt="Vitals Testing" class="placeholder-img" style="height: 250px; border: none;" onerror="this.src='https://via.placeholder.com/400x250/0f1629/0d9488?text=Upload+testing-vitals.png'">
+          </div>
+          <h3>Sensor Validation</h3>
+          <p>Verifying the accuracy of the MAX30102 heart rate sensor and NEO-6M GPS module under different conditions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUDGET TABLE -->
+  <section class="section" id="budget" style="background: var(--bg-secondary);">
+    <div class="container">
+      <h2 class="section-title">Project Budget</h2>
+      <p class="section-desc">Estimated hardware cost breakdown for one complete system (1 Basecamp, 1 Repeater, 1 Climber, 1 Wristband).</p>
+      
+      <div class="table-container" style="max-width: 800px; margin: 0 auto;">
+        <table class="budget-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Quantity</th>
+              <th>Unit Cost (LKR)</th>
+              <th>Total Cost (LKR)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ESP32 Development Board</td>
+              <td>4</td>
+              <td>1,800</td>
+              <td>7,200</td>
+            </tr>
+            <tr>
+              <td>SX1278 LoRa Module (433MHz)</td>
+              <td>3</td>
+              <td>2,500</td>
+              <td>7,500</td>
+            </tr>
+            <tr>
+              <td>NEO-6M GPS Module</td>
+              <td>1</td>
+              <td>2,200</td>
+              <td>2,200</td>
+            </tr>
+            <tr>
+              <td>MAX30102 Heart Rate Sensor</td>
+              <td>1</td>
+              <td>1,200</td>
+              <td>1,200</td>
+            </tr>
+            <tr>
+              <td>Li-Po Batteries (18650) & Modules</td>
+              <td>4</td>
+              <td>1,500</td>
+              <td>6,000</td>
+            </tr>
+            <tr>
+              <td>Enclosures & Miscellaneous</td>
+              <td>1</td>
+              <td>3,000</td>
+              <td>3,000</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="3" style="text-align: right;">Total Estimated Budget:</td>
+              <td>27,100 LKR</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -161,15 +300,15 @@ permalink: index.html
         <h3 class="text-accent" style="justify-content: center; margin-bottom: 30px; font-size: 1.5rem;">Academic Supervision</h3>
         <div class="grid-2" style="max-width: 600px; margin: 0 auto 30px auto; gap: 40px;">
           <div class="team-member">
-            <img src="images/yashodha.png" alt="Ms. Yashodha" class="avatar-img" style="border: none;" onerror="this.src='https://via.placeholder.com/150x150/090e17/0d9488?text=Drop+Yashodha.png'">
-            <p style="color: var(--text-primary); font-size: 1.15rem; font-weight: 500;">Ms. Yashodha Vimukthi</p>
+            <img src="images/isuru.png" alt="Dr. Isuru Nawinne" class="avatar-img" style="border: none;" onerror="this.src='https://via.placeholder.com/150x150/090e17/0d9488?text=Drop+Isuru.png'">
+            <p style="color: var(--text-primary); font-size: 1.15rem; font-weight: 500;">Dr. Isuru Nawinne</p>
             <div class="social-links" style="margin-top: 5px;">
               <a href="https://linkedin.com/in/#" target="_blank"><i class="ph ph-linkedin-logo"></i></a>
             </div>
           </div>
           <div class="team-member">
-            <img src="images/thiliru.png" alt="Mr. Thiliru" class="avatar-img" style="border: none;" onerror="this.src='https://via.placeholder.com/150x150/090e17/0d9488?text=Drop+Thiliru.png'">
-            <p style="color: var(--text-primary); font-size: 1.15rem; font-weight: 500;">Mr. Thiliru Samaradiwakara</p>
+            <img src="images/yashodha.png" alt="Ms. Yashodha Vimukthi" class="avatar-img" style="border: none;" onerror="this.src='https://via.placeholder.com/150x150/090e17/0d9488?text=Drop+Yashodha.png'">
+            <p style="color: var(--text-primary); font-size: 1.15rem; font-weight: 500;">Ms. Yashodha Vimukthi</p>
             <div class="social-links" style="margin-top: 5px;">
               <a href="https://linkedin.com/in/#" target="_blank"><i class="ph ph-linkedin-logo"></i></a>
             </div>

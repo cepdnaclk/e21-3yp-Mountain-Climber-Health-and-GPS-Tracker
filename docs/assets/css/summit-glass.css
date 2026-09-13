@@ -315,6 +315,38 @@ h1, h2, h3, h4 {
   border: 1px solid var(--border);
 }
 
+/* ── TABLES ── */
+.table-container {
+  overflow-x: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.budget-table th, .budget-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border);
+}
+.budget-table th {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+.budget-table tr:last-child td {
+  border-bottom: none;
+}
+.budget-table .total-row {
+  font-weight: 700;
+  color: var(--text-primary);
+  background: rgba(13, 148, 136, 0.1);
+}
+
 /* Text alignment helpers */
 .text-center { text-align: center; }
 .mt-4 { margin-top: 1.5rem; }
