@@ -14,6 +14,10 @@ permalink: index.html
   
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    .hardware-img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 20px; border-radius: 8px; }
+    .screenshot-img { width: 100%; display: block; border-radius: var(--radius-lg); border: 1px solid var(--border); }
+  </style>
 </head>
 <body>
 
@@ -59,38 +63,22 @@ permalink: index.html
       
       <div class="grid-2">
         <div class="card">
-          <!-- Placeholder for Climber Node Image -->
-          <div class="placeholder-img">
-            Drop your real Climber Node image here<br>
-            (docs/images/climber-node.png)
-          </div>
+          <img src="images/climber-node.png" alt="Climber Node" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Climber+Node'">
           <h3>Climber Main Device</h3>
           <p>ESP32 + SX1278 LoRa + NEO-6M GPS. Worn on the backpack, acts as the central hub.</p>
         </div>
         <div class="card">
-          <!-- Placeholder for Wristband Image -->
-          <div class="placeholder-img">
-            Drop your real Health Wristband image here<br>
-            (docs/images/ble-watch.png)
-          </div>
+          <img src="images/ble-watch.png" alt="Health Wristband" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Health+Wristband'">
           <h3>Health Wristband</h3>
           <p>ESP32-H2 + MAX30102. Relays heart rate over BLE to the mobile app.</p>
         </div>
         <div class="card">
-          <!-- Placeholder for Repeater Image -->
-          <div class="placeholder-img">
-            Drop your real LoRa Repeater image here<br>
-            (docs/images/repeater-node.png)
-          </div>
+          <img src="images/repeater-node.png" alt="LoRa Repeater" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=LoRa+Repeater'">
           <h3>LoRa Repeater</h3>
           <p>Autonomous mesh node that re-transmits packets to extend range over ridges.</p>
         </div>
         <div class="card">
-          <!-- Placeholder for Basecamp Image -->
-          <div class="placeholder-img">
-            Drop your real Basecamp Receiver image here<br>
-            (docs/images/basecamp-node.png)
-          </div>
+          <img src="images/basecamp-node.png" alt="Basecamp Receiver" class="hardware-img" onerror="this.src='https://via.placeholder.com/400x200/0f1629/0d9488?text=Basecamp+Receiver'">
           <h3>Basecamp Receiver</h3>
           <p>USB-serial bridge linking the LoRa network directly to the rescue coordinator's laptop.</p>
         </div>
@@ -106,29 +94,17 @@ permalink: index.html
       
       <h3 class="text-accent" style="margin-bottom: 10px;">Basecamp Dashboard (Flask + Leaflet)</h3>
       <div class="screenshot-container">
-        <!-- Placeholder for Dashboard Image -->
-        <div class="placeholder-img">
-            Drop your Dashboard screenshot here<br>
-            (docs/images/dashboard.png)
-        </div>
+        <img src="images/dashboard.png" alt="Dashboard Placeholder" class="screenshot-img" onerror="this.src='https://via.placeholder.com/1000x500/090e17/0d9488?text=Replace+with+images/dashboard.png'">
       </div>
 
       <h3 class="text-accent" style="margin-bottom: 10px;">Climber Mobile App (Flutter)</h3>
       <div class="screenshot-container" style="max-width: 400px; margin: 0 auto 40px auto;">
-        <!-- Placeholder for Mobile App Image -->
-        <div class="placeholder-img">
-            Drop your Mobile App screenshot here<br>
-            (docs/images/mobile-app.png)
-        </div>
+        <img src="images/mobile-app.png" alt="Mobile App Placeholder" class="screenshot-img" onerror="this.src='https://via.placeholder.com/400x800/090e17/0d9488?text=Replace+with+images/mobile-app.png'">
       </div>
 
       <h3 class="text-accent" style="margin-bottom: 10px;">Summit Gear Portal (Next.js + Supabase)</h3>
       <div class="screenshot-container">
-        <!-- Placeholder for Portal Image -->
-        <div class="placeholder-img">
-            Drop your Summit Portal screenshot here<br>
-            (docs/images/portal.png)
-        </div>
+        <img src="images/portal.png" alt="Portal Placeholder" class="screenshot-img" onerror="this.src='https://via.placeholder.com/1000x500/090e17/0d9488?text=Replace+with+images/portal.png'">
       </div>
     </div>
   </section>
