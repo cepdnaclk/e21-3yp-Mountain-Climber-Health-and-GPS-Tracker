@@ -1,99 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart' as perm;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const ClimberApp());
-}
-
-// Serves map tiles from disk if already cached; otherwise fetches from the
-// network (needs internet), saves the bytes to disk, and displays it. Once a
-// tile has been viewed once with internet available, it's cached permanently
-// and works with no connection at all afterwards - no manual download step
-// required, though the companion download_tiles.py script can still be used
-// to pre-seed a specific area in advance for places you'll never have signal.
-class CachingTileProvider extends TileProvider {
-  final String tilesRoot;
-
-  CachingTileProvider(this.tilesRoot);
-
-  @override
-  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
-    final path = tilesRoot.isEmpty
-        ? null
-        : '$tilesRoot/${coordinates.z}/${coordinates.x}/${coordinates.y}.png';
-    final url = 'https://tile.openstreetmap.org/${coordinates.z}/${coordinates.x}/${coordinates.y}.png';
-    return CachedTileImage(path, url);
-  }
-}
-
-class CachedTileImage extends ImageProvider<CachedTileImage> {
-  final String? filePath;
-  final String networkUrl;
-
-  const CachedTileImage(this.filePath, this.networkUrl);
-
-  @override
-  Future<CachedTileImage> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture<CachedTileImage>(this);
-  }
-
-  @override
-  ImageStreamCompleter loadImage(CachedTileImage key, ImageDecoderCallback decode) {
-    return MultiFrameImageStreamCompleter(
-      codec: _load(decode),
-      scale: 1.0,
-    );
-  }
-
-  Future<ui.Codec> _load(ImageDecoderCallback decode) async {
-    if (filePath != null) {
-      final cached = File(filePath!);
-      if (await cached.exists()) {
-        final bytes = await cached.readAsBytes();
-        return decode(await ui.ImmutableBuffer.fromUint8List(bytes));
-      }
-    }
-
-    // Not cached yet - only works if the phone currently has internet.
-    final response = await http.get(Uri.parse(networkUrl)).timeout(const Duration(seconds: 6));
-    if (response.statusCode != 200) {
-      throw Exception('Tile fetch failed (${response.statusCode})');
-    }
-
-    final bytes = response.bodyBytes;
-
-    if (filePath != null) {
-      try {
-        final cached = File(filePath!);
-        await cached.parent.create(recursive: true);
-        await cached.writeAsBytes(bytes);
-      } catch (_) {
-        // Non-fatal: the tile still displays even if caching to disk fails.
-      }
-    }
-
-    return decode(await ui.ImmutableBuffer.fromUint8List(bytes));
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      other is CachedTileImage && other.filePath == filePath && other.networkUrl == networkUrl;
-
-  @override
-  int get hashCode => Object.hash(filePath, networkUrl);
 }
 
 // Fast timeout fixes.
@@ -282,12 +200,6 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<List<int>>? charSubscription;
   StreamSubscription<BluetoothConnectionState>? connectionSubscription;
 
-  // Folder on the phone's filesystem where offline map tiles are stored, e.g.
-  // /storage/emulated/0/Android/data/<package>/files/tiles - resolved once at
-  // startup. Copy downloaded tiles here (see the companion download script) for
-  // the map to work with no internet connection at all.
-  String? tilesRootPath;
-
   @override
   void initState() {
     super.initState();
@@ -297,7 +209,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> startApp() async {
     await requestPermissions();
     await prepareLocation();
-    await resolveTilesPath();
 
     bluetoothSubscription = FlutterBluePlus.adapterState.listen((state) {
       bluetoothOn = state == BluetoothAdapterState.on;
@@ -350,20 +261,6 @@ class _HomePageState extends State<HomePage> {
 
     locationReady = permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse;
-  }
-
-  // Resolves the app's private external files folder (no special storage
-  // permission needed on modern Android) and points the offline map at
-  // <that folder>/tiles. Copy downloaded tiles here via adb push or a file
-  // manager for the map to work fully offline.
-  Future<void> resolveTilesPath() async {
-    try {
-      final dir = await getExternalStorageDirectory();
-      tilesRootPath = dir != null ? '${dir.path}/tiles' : null;
-    } catch (_) {
-      tilesRootPath = null;
-    }
-    if (mounted) setState(() {});
   }
 
   void runWatchdog() {
@@ -900,11 +797,9 @@ class _HomePageState extends State<HomePage> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: '{z}/{x}/{y}.png',
-                  tileProvider: CachingTileProvider(tilesRootPath ?? ''),
+                  // To use strict offline mode, change this to an AssetTileProvider pointing to your .mbtiles
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.climber.app',
-                  errorImage: const AssetImage('assets/tile_placeholder.png'),
-                  errorTileCallback: (tile, error, stackTrace) {},
                 ),
                 PolylineLayer(
                   polylines: [
@@ -949,20 +844,8 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 8),
         row('Point B (Home)', 'Basecamp'),
         row('Point C (Pin)', status.gpsCurrentFix ? 'Current climber' : 'Last known climber'),
-        row('Offline tiles folder', tilesRootPath ?? 'Resolving...'),
-        row('Cached tiles', _tilesAvailable() ? 'Some areas cached - available offline' : 'None cached yet - view this area with internet once first'),
       ],
     );
-  }
-
-  bool _tilesAvailable() {
-    if (tilesRootPath == null) return false;
-    try {
-      return Directory(tilesRootPath!).existsSync() &&
-          Directory(tilesRootPath!).listSync().isNotEmpty;
-    } catch (_) {
-      return false;
-    }
   }
 
   Widget gpsPanel() {
