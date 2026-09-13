@@ -1,0 +1,316 @@
+/* 
+  ================================================
+  Summit Glass Theme for Mountain Safety Project
+  ================================================
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700;800&display=swap');
+
+:root {
+  --bg-dark: #090e17;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.05);
+  --border-hover: rgba(0, 229, 255, 0.4);
+  
+  --coral: #FF6B35;
+  --coral-dim: rgba(255, 107, 53, 0.2);
+  --teal: #00E5FF;
+  --teal-dim: rgba(0, 229, 255, 0.2);
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  /* Dark, subtle mesh gradient background */
+  background-image: 
+    radial-gradient(circle at 15% 50%, var(--teal-dim), transparent 25%),
+    radial-gradient(circle at 85% 30%, var(--coral-dim), transparent 25%);
+  background-attachment: fixed;
+}
+
+/* Custom Typography */
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--teal), var(--coral));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Container */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ── HERO SECTION ── */
+.hero {
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  animation: fadeUp 1s ease-out;
+}
+
+.hero h1 {
+  font-size: 4rem;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  letter-spacing: -0.05em;
+}
+
+.hero p {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin-bottom: 30px;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 20px;
+}
+
+.btn {
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--teal), #0284c7);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+}
+.btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--coral);
+  transform: translateY(-2px);
+}
+
+/* ── SECTIONS ── */
+.section {
+  padding: 80px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.section-title {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.section-desc {
+  text-align: center;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto 50px auto;
+}
+
+/* ── GLASS CARDS (Features & Hardware) ── */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 30px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--border-hover);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card:hover::before {
+  transform: translateX(100%);
+}
+
+.glass-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.glass-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ── HARDWARE IMAGES ── */
+.hardware-img {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
+  transition: transform 0.3s ease;
+}
+.glass-card:hover .hardware-img {
+  transform: scale(1.05);
+}
+
+/* ── SCREENSHOTS & DIAGRAMS ── */
+.screenshot-container {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  margin-bottom: 40px;
+}
+.screenshot-img {
+  width: 100%;
+  display: block;
+}
+
+.arch-diagram {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 40px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+/* ── TEAM SECTION ── */
+.team-member {
+  text-align: center;
+}
+.team-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--teal);
+  margin: 0 auto 20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  box-shadow: 0 0 20px var(--teal-dim);
+}
+.team-name {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+.team-role {
+  color: var(--coral);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+.team-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+.team-links a {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  transition: color 0.2s;
+}
+.team-links a:hover {
+  color: var(--teal);
+}
+
+/* ── SUPERVISORS ── */
+.supervisors {
+  margin-top: 60px;
+  text-align: center;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 30px;
+  border: 1px dashed var(--border-color);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--teal-dim); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--teal); }
+
+/* Custom Cursor */
+html, body {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300E5FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='3 3 10 21 14 14 21 10 3 3'/%3E%3C/svg%3E") 3 3, auto;
+}
+a, button, .btn {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23FF6B35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E") 12 12, pointer;
+}
