@@ -1,6 +1,5 @@
 #include <SPI.h>
 #include <LoRa.h>
-#include <esp_task_wdt.h>
 
 /*
   CLIMBER OFF-GRID LoRa REPEATER
@@ -285,27 +284,6 @@ void relayOneQueuedPacket() {
   relayQueue[slot].used = false;
 
   String outgoing = bumpHop(packet);
-  
-  // Decrement TTL if present
-  int ttlIdx = outgoing.indexOf("TTL:");
-  if (ttlIdx >= 0) {
-    int valStart = ttlIdx + 4;
-    int valEnd = outgoing.indexOf(",", valStart);
-    if (valEnd < 0) valEnd = outgoing.length();
-    int ttl = outgoing.substring(valStart, valEnd).toInt();
-    ttl--;
-    if (ttl <= 0) {
-      Serial.println("DROP TTL=0");
-      return;
-    }
-    outgoing = outgoing.substring(0, valStart) + String(ttl) + outgoing.substring(valEnd);
-  }
-
-  // LBT before tx
-  int attempts = 10;
-  while (LoRa.parsePacket() > 0 && attempts-- > 0) {
-    delay(random(50, 200));
-  }
 
   LoRa.idle();
   LoRa.beginPacket();
@@ -410,9 +388,6 @@ void setup() {
   Serial.begin(115200);
   delay(500);
 
-  esp_task_wdt_init(8, true);
-  esp_task_wdt_add(NULL);
-
 #if STATUS_LED >= 0
   pinMode(STATUS_LED, OUTPUT);
   digitalWrite(STATUS_LED, LOW);
@@ -440,7 +415,6 @@ void setup() {
   LoRa.setTxPower(LORA_TX_POWER);
   // CRC is intentionally left at the LoRa library default because the existing
   // climber and basecamp sketches do not enable explicit payload CRC.
-  LoRa.enableCrc();
   LoRa.receive();
 
   Serial.print("READY ");
@@ -450,12 +424,6 @@ void setup() {
 }
 
 void loop() {
-  esp_task_wdt_reset();
-  
-  // Interrupt-driven packet reception using DIO0 pin would be better than constant polling.
-  // It would involve attaching an interrupt to the DIO0 pin and setting a flag when a packet is received,
-  // then processing it here instead of calling LoRa.parsePacket() repeatedly.
-  // We keep polling as a fallback for reliability.
   receivePackets();
   relayOneQueuedPacket();
 
