@@ -1,0 +1,107 @@
+\chapter{Budget \& Bill of Materials}
+\label{ch:budget}
+
+This chapter details the financial planning for the Mountain Climber Health \& GPS Tracker. The budget is divided into hardware component costs (Bill of Materials) and general development and deployment costs. All prices are estimated in Sri Lankan Rupees (LKR) based on local electronics suppliers at the time of development.
+
+\section{Device Bill of Materials (BOM)}
+
+The system consists of three distinct hardware units. Table \ref{tab:bom} outlines the components required for a single Climber Main Device, which is the most complex unit in the system.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Bill of Materials for a Single Climber Main Device}
+    \label{tab:bom}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{llccc}
+        \toprule
+        \textbf{Component} & \textbf{Specification} & \textbf{Qty} & \textbf{Unit Cost (LKR)} & \textbf{Total (LKR)} \\
+        \midrule
+        Microcontroller & ESP32 DevKit V1 & 1 & 2,500 & 2,500 \\
+        Health Sensor & MAX30102 Pulse Oximeter & 1 & 800 & 800 \\
+        GPS Module & Ublox NEO-6M & 1 & 1,500 & 1,500 \\
+        LoRa Transceiver & SX1278 (433MHz) & 1 & 1,200 & 1,200 \\
+        Power Supply & 18650 Li-ion Battery (3.7V) & 1 & 600 & 600 \\
+        Charging Module & TP4056 Battery Charger & 1 & 250 & 250 \\
+        Enclosure & Custom 3D Printed / ABS & 1 & 500 & 500 \\
+        Miscellaneous & PCBs, Wires, Connectors, LEDs & 1 & 800 & 800 \\
+        \midrule
+        \multicolumn{4}{r}{\textbf{Total Cost per Climber Device}} & \textbf{8,150} \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\begin{infobox}
+The Wristband, Repeater, and Base Camp units utilize subsets of these components. For example, a Repeater only requires an ESP32, SX1278, battery, and enclosure, bringing its unit cost down to approximately LKR 5,650.
+\end{infobox}
+
+\section{Total Hardware System Cost}
+
+For a standard expedition setup, the system is designed to support multiple climbers and require relay nodes depending on the terrain. Table \ref{tab:system_cost} calculates the cost for a typical base configuration consisting of two climbers, one repeater, and one base camp unit.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Hardware Cost for a Standard Expedition Setup}
+    \label{tab:system_cost}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Unit Type} & \textbf{Estimated Unit Cost (LKR)} & \textbf{Quantity} & \textbf{Total (LKR)} \\
+        \midrule
+        Climber Main Device & 8,150 & 2 & 16,300 \\
+        Wristband Device (BLE) & 4,500 & 2 & 9,000 \\
+        Repeater Node & 5,650 & 1 & 5,650 \\
+        Base Camp Unit & 5,200 & 1 & 5,200 \\
+        \midrule
+        \multicolumn{3}{r}{\textbf{Total Hardware System Cost}} & \textbf{36,150} \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\section{Software and Development Costs}
+
+While the system heavily utilizes open-source software (Flutter, Python, PostgreSQL), there are infrastructural costs associated with hosting the web portal, database, and domain names.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Development and Infrastructure Costs}
+    \label{tab:dev_cost}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{llc}
+        \toprule
+        \textbf{Item} & \textbf{Description} & \textbf{Cost (LKR)} \\
+        \midrule
+        Domain Name & summitgear.com (Annual) & 4,500 \\
+        Web Hosting (Vercel) & Next.js frontend hosting & Free Tier \\
+        Database Hosting (Supabase) & PostgreSQL, Auth, Storage & Free Tier \\
+        Development Tools & Soldering supplies, multimeters & 3,500 \\
+        Prototyping Waste & Damaged/burnt components during R\&D & 2,500 \\
+        \midrule
+        \multicolumn{2}{r}{\textbf{Total Development Costs}} & \textbf{10,500} \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\section{Budget Summary}
+
+The grand total for deploying the prototype system, including a standard hardware configuration and initial infrastructure setup, is calculated as follows:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Grand Total Budget Summary}
+    \label{tab:grand_total}
+    \begin{tabular}{lr}
+        \toprule
+        \textbf{Category} & \textbf{Amount (LKR)} \\
+        \midrule
+        Hardware System Cost & 36,150 \\
+        Development \& Infrastructure Costs & 10,500 \\
+        \midrule
+        Contingency Fund (10\%) & 4,665 \\
+        \midrule
+        \textbf{Grand Total Estimate} & \textbf{51,315} \\
+        \bottomrule
+    \end{tabular}
+\end{table}

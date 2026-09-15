@@ -1,0 +1,174 @@
+\chapter{Hardware Design}
+\label{ch:hardware-design}
+
+This chapter details the hardware architecture, component selection, circuit design, and power management strategies for the four distinct physical devices comprising the system.
+
+\section{Component Specifications}
+Across the devices, standard modules were chosen for reliability, availability, and community support:
+\begin{itemize}
+    \item \textbf{ESP32 Microcontroller:} The core processing unit. Features a dual-core Tensilica LX6 microprocessor running at 240 MHz, 520 KB internal SRAM, and integrated Wi-Fi (802.11 b/g/n) and Bluetooth (v4.2 BR/EDR and BLE). Operating voltage is 3.3V.
+    \item \textbf{MAX30102 Sensor:} An integrated pulse oximetry and heart-rate monitor module. It communicates via I2C and operates strictly at 3.3V.
+    \item \textbf{NEO-6M GPS Module:} A cost-effective, high-performance GPS receiver with a built-in ceramic antenna. It communicates via UART (default 9600 baud rate).
+    \item \textbf{SX1278 LoRa Transceiver:} A long-range wireless transceiver operating at the 433 MHz ISM band. It interfaces with the ESP32 via SPI and is crucial for the mesh network.
+\end{itemize}
+
+\section{Climber Main Device}
+The Climber Main Device acts as the central hub for the user, aggregating local data and handling long-range communications.
+
+\subsection{Design Rationale}
+This device requires significant processing capability to manage BLE connections with the phone, UART communication with the GPS, and SPI communication with the LoRa module simultaneously. The ESP32 is perfectly suited for this due to its dual-core nature and RTOS support. 
+
+\subsection{Electronic Schematic \& PCB Layout}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 1.5cm,
+        chip/.style={draw, rectangle, rounded corners=2pt, minimum width=3cm, minimum height=1.5cm, align=center, fill=slate800, text=white, font=\bfseries},
+        wire/.style={-stealth, thick, draw=slate600},
+        bus/.style={-stealth, ultra thick, draw=blue500},
+        label/.style={font=\scriptsize\ttfamily, fill=white, inner sep=1pt}
+    ]
+        % Main MCU
+        \node[chip, minimum height=3cm] (esp) {ESP32\\Microcontroller};
+        
+        % Peripherals
+        \node[chip, fill=teal700, above=1.5cm of esp] (gps) {NEO-6M\\GPS};
+        \node[chip, fill=teal700, left=2cm of esp] (lora) {SX1278\\LoRa (433MHz)};
+        \node[chip, fill=red500, right=2cm of esp] (leds) {RGB LEDs \&\\Buzzer};
+        \node[chip, fill=amber500, text=black, below=1.5cm of esp] (power) {Power Mgmt\\(18650 Li-ion)};
+
+        % Signal Buses
+        \draw[bus] (gps.south) -- node[label, right] {UART (TX/RX) [GPIO 16/17]} (esp.north);
+        \draw[bus] (lora.east) -- node[label, above] {SPI [GPIO 18,19,23,5]} (esp.west);
+        \draw[wire] (esp.east) -- node[label, above] {PWM [GPIO 25,26,27,13]} (leds.west);
+        
+        % Power Lines
+        \draw[wire, draw=amber500, thick] (power.north) -- node[label, right] {3.3V LDO} (esp.south);
+        \draw[wire, draw=amber500, thick] (power.east) -| (leds.south);
+        
+        % Power rail around the left
+        \draw[wire, draw=amber500, thick] (power.west) -| ([xshift=-1cm]lora.west) |- (gps.west);
+        \draw[wire, draw=amber500, thick] ([xshift=-1cm]lora.west |- lora.west) -- (lora.west);
+    \end{tikzpicture}
+    \caption{Climber Main Device Electronic Schematic}
+    \label{fig:climber-schematic}
+\end{figure}
+
+\subsection{Power Supply \& PCB Considerations}
+Powered by a single 18650 Lithium-ion battery (3.7V nominal, 3400mAh). A low-dropout (LDO) linear regulator (AMS1117-3.3) steps the battery voltage down to the 3.3V required by the ESP32 and peripherals. 
+
+\textbf{PCB Trace Routing:}
+\begin{itemize}
+    \item \textbf{SPI Integrity:} The traces for the SX1278 SPI bus (SCK, MISO, MOSI) are kept under 30mm to prevent signal degradation and crosstalk. Right-angle bends are avoided to maintain impedance continuity.
+    \item \textbf{RF Antenna Path:} The trace connecting the SX1278 ANT pin to the SMA connector is designed as a 50$\Omega$ coplanar waveguide with ground shielding.
+    \item \textbf{Thermal Dissipation:} Large copper pours are utilized around the AMS1117 regulator to act as a heat sink.
+\end{itemize}
+
+\section{Wristband Device}
+\subsection{Design Rationale}
+The wristband requires a compact form factor. It dedicatedly reads health vitals and advertises them over BLE, allowing it to use a smaller battery footprint.
+
+\subsection{Electronic Schematic}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 2cm,
+        chip/.style={draw, rectangle, rounded corners=2pt, minimum width=2.5cm, minimum height=1.5cm, align=center, fill=slate800, text=white, font=\bfseries},
+        wire/.style={-stealth, thick, draw=slate600},
+        bus/.style={-stealth, ultra thick, draw=teal600},
+        label/.style={font=\scriptsize\ttfamily, fill=white, inner sep=1pt}
+    ]
+        % Main MCU
+        \node[chip, minimum height=2.5cm] (esp) {ESP32\\Microcontroller};
+        
+        % Peripherals
+        \node[chip, fill=red500, left=of esp] (sensor) {MAX30102\\Oximeter};
+        \node[chip, fill=amber500, text=black, right=of esp] (power) {LiPo Battery\\(3.7V 500mAh)};
+
+        % I2C Bus
+        \draw[bus] (sensor.east) -- node[label, above] {I2C (SDA, SCL) [GPIO 21/22]} (esp.west);
+        
+        % Power Lines
+        \draw[wire, draw=amber500, thick] (power.west) -- node[label, above] {3.3V} (esp.east);
+        
+        % Sensor power
+        \draw[wire, draw=amber500, thick] (power.south) -- +(0,-0.8) -| (sensor.south);
+    \end{tikzpicture}
+    \caption{Wristband Device Electronic Schematic}
+    \label{fig:wristband-schematic}
+\end{figure}
+
+\section{Repeater Node}
+\subsection{Design Rationale}
+The Repeater node is essentially a stripped-down version of the main device, consisting only of the ESP32, SX1278 LoRa module, and a larger battery capacity (dual 18650s in parallel) since it must remain active for the duration of the expedition on a remote ridge.
+
+\subsection{Electronic Schematic}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 2cm,
+        chip/.style={draw, rectangle, rounded corners=2pt, minimum width=2.5cm, minimum height=1.5cm, align=center, fill=slate800, text=white, font=\bfseries},
+        wire/.style={-stealth, thick, draw=slate600},
+        bus/.style={-stealth, ultra thick, draw=blue500},
+        label/.style={font=\scriptsize\ttfamily, fill=white, inner sep=1pt}
+    ]
+        % Main MCU
+        \node[chip, minimum height=2.5cm] (esp) {ESP32\\Microcontroller};
+        
+        % Peripherals
+        \node[chip, fill=teal700, left=of esp] (lora) {SX1278\\LoRa (433MHz)};
+        \node[chip, fill=amber500, text=black, right=of esp] (power) {Dual 18650\\(6800mAh)};
+
+        % SPI Bus
+        \draw[bus] (lora.east) -- node[label, above] {SPI Bus} (esp.west);
+        
+        % Power Lines
+        \draw[wire, draw=amber500, thick] (power.west) -- node[label, above] {3.3V LDO} (esp.east);
+        \draw[wire, draw=amber500, thick] (power.south) -- +(0,-0.8) -| (lora.south);
+        
+    \end{tikzpicture}
+    \caption{Repeater Node Electronic Schematic}
+    \label{fig:repeater-schematic}
+\end{figure}
+
+\section{Base Camp Unit}
+\subsection{Design Rationale}
+The Base Camp Unit mirrors the Repeater hardware but operates in a different software mode. It requires a stable serial data connection to the laptop running the Dashboard.
+
+\subsection{Electronic Schematic}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 1.5cm,
+        chip/.style={draw, rectangle, rounded corners=2pt, minimum width=2.5cm, minimum height=1.5cm, align=center, fill=slate800, text=white, font=\bfseries},
+        wire/.style={-stealth, thick, draw=slate600},
+        bus/.style={-stealth, ultra thick, draw=blue500},
+        label/.style={font=\scriptsize\ttfamily, fill=white, inner sep=1pt}
+    ]
+        % Main MCU
+        \node[chip, minimum height=2.5cm] (esp) {ESP32\\Microcontroller};
+        
+        % Peripherals
+        \node[chip, fill=teal700, left=of esp] (lora) {SX1278\\LoRa (433MHz)};
+        \node[chip, fill=slate600, right=of esp] (usb) {CP2102\\UART-to-USB};
+        \node[chip, fill=chaptergray, text=slate800, below=of usb] (laptop) {Dashboard\\Laptop};
+
+        % SPI Bus
+        \draw[bus] (lora.east) -- node[label, above] {SPI Bus} (esp.west);
+        
+        % Serial Bus
+        \draw[wire, thick] (esp.east) -- node[label, above] {UART (115200)} (usb.west);
+        \draw[bus, draw=slate800] (usb.south) -- node[label, right] {USB 2.0} (laptop.north);
+        
+    \end{tikzpicture}
+    \caption{Base Camp Unit Electronic Schematic}
+    \label{fig:basecamp-schematic}
+\end{figure}
+
+\begin{cautionbox}
+Ensure that the Base Camp Unit's LoRa antenna is properly connected before powering on via USB. Transmitting LoRa signals without an antenna connected can irreversibly damage the SX1278 transceiver amplifier due to impedance mismatch.
+\end{cautionbox}

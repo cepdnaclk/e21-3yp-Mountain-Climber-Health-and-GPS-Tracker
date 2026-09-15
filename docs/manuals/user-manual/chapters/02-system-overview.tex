@@ -1,0 +1,70 @@
+\chapter{System Overview}
+\label{ch:system_overview}
+
+The Mountain Climber Health \& GPS Tracker is a distributed IoT system comprising both wearable edge devices and centralized monitoring stations, integrated through multiple communication protocols.
+
+\section{System Architecture}
+
+The following diagram illustrates the complete system architecture and the interconnections between various components.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 2cm,
+        box/.style={draw, rectangle, rounded corners, minimum width=2.5cm, minimum height=1cm, align=center, fill=blue!10},
+        comm/.style={-stealth, thick},
+        label/.style={font=\footnotesize, fill=white, inner sep=2pt}
+    ]
+        % Nodes (U-Shape Layout)
+        \node[box] (wristband) {Wristband\\(ESP32, MAX30102)};
+        \node[box, right=of wristband] (phone) {Mobile App\\(Flutter/BLE)};
+        \node[box, right=of phone] (climber) {Climber Main\\(ESP32, GPS, LoRa)};
+        
+        \node[box, below=1.5cm of climber] (repeater) {Repeater\\(ESP32, LoRa)};
+        \node[box, left=of repeater] (basecamp) {Base Camp Unit\\(ESP32, LoRa, WiFi)};
+        \node[box, left=of basecamp] (dashboard) {Dashboard Laptop\\(Flask, Serial)};
+        \node[box, below=1.5cm of dashboard] (portal) {Web Portal\\(Next.js, Supabase)};
+        
+        % Connections
+        \draw[comm, dashed] (wristband) -- node[label, above] {BLE (Vitals)} (phone);
+        \draw[comm, dashed] (phone) -- node[label, above] {BLE (Msgs)} (climber);
+        \draw[comm] (climber) -- node[label, right] {LoRa (433MHz)} (repeater);
+        \draw[comm] (repeater) -- node[label, above] {LoRa (433MHz)} (basecamp);
+        \draw[comm, thick, blue] (basecamp) -- node[label, above] {USB Serial} (dashboard);
+        \draw[comm, thick, green!50!black] (dashboard) -- node[label, right] {Internet} (portal);
+
+    \end{tikzpicture}
+    \caption{System Components and Communication Flow}
+    \label{fig:system_architecture}
+\end{figure}
+
+\section{Component Descriptions}
+
+\subsection{Wearables and Edge Devices}
+\begin{itemize}
+    \item \textbf{Wristband:} A compact wearable device that monitors real-time health metrics (Heart Rate and Blood Oxygen Saturation via the MAX30102 sensor). It advertises this data using Bluetooth Low Energy (BLE).
+    \item \textbf{Climber Main Device:} The primary edge node carried by the climber. It captures GPS coordinates (NEO-6M), connects with the mobile app via BLE, and acts as the primary LoRa (SX1278) transmitter to send data over the long-range mesh network.
+\end{itemize}
+
+\subsection{Network Infrastructure}
+\begin{itemize}
+    \item \textbf{Repeater:} A strategically placed relay node that extends the LoRa communication range across rugged and non-line-of-sight mountainous terrain.
+    \item \textbf{Base Camp Unit:} The receiver node situated at the base camp. It listens for all incoming LoRa transmissions from the mountain and forwards them to the dashboard via a USB serial connection or WiFi (SoftAP).
+\end{itemize}
+
+\subsection{Software Applications}
+\begin{itemize}
+    \item \textbf{Mobile App:} A Flutter-based smartphone application that connects to the wristband and climber device via BLE. It provides the climber with a real-time view of their vitals, a map of their route, and an interface for sending text messages or triggering SOS alerts.
+    \item \textbf{Dashboard:} A robust Python Flask desktop application used by operators at the base camp. It visualizes incoming JSON serial data, plotting climber positions on a real-time HTML5 Canvas map, monitoring health thresholds, and managing alarms.
+    \item \textbf{Web Portal:} A centralized cloud platform (Next.js and Supabase) used prior to or after expeditions. It facilitates device registration, over-the-air (OTA) firmware downloads, and e-commerce for summit gear.
+\end{itemize}
+
+\section{Communication Flow}
+Data flows continuously from the edge to the center:
+\begin{enumerate}
+    \item \textbf{Vitals Acquisition:} The Wristband captures vitals and advertises them via BLE to the Climber's Mobile Phone.
+    \item \textbf{Local Aggregation:} The Mobile App sends commands/messages via BLE to the Climber Main Device.
+    \item \textbf{Long-Range Transmission:} The Climber Main Device bundles health data, GPS coordinates, and messages, transmitting them via a 433MHz LoRa signal (SF7, BW 125kHz).
+    \item \textbf{Relay:} The Repeater catches the LoRa packets and rebroadcasts them.
+    \item \textbf{Reception \& Processing:} The Base Camp Unit receives the LoRa packets and streams them as JSON strings over a 115200 baud USB serial connection to the Dashboard Laptop for immediate visualization.
+\end{enumerate}

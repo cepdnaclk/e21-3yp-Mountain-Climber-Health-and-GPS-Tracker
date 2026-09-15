@@ -1,0 +1,88 @@
+\chapter{API Reference}
+\label{app:api_ref}
+
+This appendix documents the key Application Programming Interfaces (APIs) used for communication between the Flask Base Camp Dashboard and the Next.js Supabase web portal.
+
+\section{Base Camp Dashboard (Flask REST API)}
+
+The Python Flask dashboard exposes a local API that the desktop UI interacts with to retrieve serial data and send commands.
+
+\subsection{\texttt{GET /}}
+Renders the main dashboard HTML interface.
+\begin{itemize}
+    \item \textbf{Authentication:} None (Localhost only)
+    \item \textbf{Response:} HTML page.
+\end{itemize}
+
+\subsection{\texttt{GET /get\_data}}
+Polls the latest telemetry data received from the serial port.
+\begin{itemize}
+    \item \textbf{Authentication:} None
+    \item \textbf{Response:} JSON Array of climber objects.
+\end{itemize}
+\begin{lstlisting}
+{
+  "climbers": [
+    {
+      "id": 5,
+      "lat": 7.2906,
+      "lng": 80.6337,
+      "hr": 85,
+      "spo2": 98,
+      "status": "normal",
+      "last_seen": "2024-05-20T10:30:00Z"
+    }
+  ]
+}
+\end{lstlisting}
+
+\subsection{\texttt{POST /send\_message}}
+Queues a text message to be transmitted via LoRa to a specific climber.
+\begin{itemize}
+    \item \textbf{Request Body (JSON):}
+    \begin{lstlisting}
+    {
+      "dest_id": 5,
+      "message": "Weather deteriorating. Return to base."
+    }
+    \end{lstlisting}
+    \item \textbf{Response:} HTTP 200 OK
+\end{itemize}
+
+\subsection{\texttt{GET /export\_csv}}
+Triggers a download of all logged telemetry data for post-expedition analysis.
+\begin{itemize}
+    \item \textbf{Response:} \texttt{text/csv} file download.
+\end{itemize}
+
+\section{Summit Gear Web Portal (Next.js Server Actions)}
+
+The Next.js portal utilizes Server Actions for interacting with the Supabase database. These act as secure, server-side API endpoints.
+
+\subsection{\texttt{registerDevice(serialNum, userId)}}
+Registers a new physical device to a user's account.
+\begin{itemize}
+    \item \textbf{Auth Required:} Yes (Valid session JWT)
+    \item \textbf{Response:} Success boolean or error message.
+\end{itemize}
+
+\subsection{\texttt{createOrder(cart: CartItem[], userId: string)}}
+Processes an e-commerce checkout.
+\begin{itemize}
+    \item \textbf{Auth Required:} Yes
+    \item \textbf{Response:} Order UUID string.
+\end{itemize}
+
+\subsection{\texttt{getProducts(category?: string)}}
+Fetches the catalog of available gear and devices.
+\begin{itemize}
+    \item \textbf{Auth Required:} No
+    \item \textbf{Response:} Array of Product objects.
+\end{itemize}
+
+\subsection{\texttt{uploadFirmware(file: FormData, version: string)}}
+Admin-only endpoint to upload a new OTA firmware binary.
+\begin{itemize}
+    \item \textbf{Auth Required:} Yes (Role must be 'admin')
+    \item \textbf{Response:} Download URL of the uploaded asset in Supabase Storage.
+\end{itemize}

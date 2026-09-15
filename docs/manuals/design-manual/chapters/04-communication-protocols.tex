@@ -1,0 +1,95 @@
+\chapter{Communication Protocol Design}
+\label{ch:communication-protocols}
+
+This chapter outlines the proprietary data formats, transmission settings, and protocols developed to ensure reliable data flow across the heterogeneous network interfaces used in the system.
+
+\section{LoRa Mesh Protocol}
+The backbone of the system's off-grid communication is the 433 MHz LoRa network. Rather than a simple point-to-point link, the system implements a rudimentary mesh/relay logic to overcome the topological challenges of mountainous environments.
+
+\subsection{LoRa Radio Settings}
+\begin{itemize}
+    \item \textbf{Frequency:} 433 MHz (ISM band suitable for high obstacle penetration).
+    \item \textbf{Spreading Factor (SF):} SF7. This was chosen as a compromise. While SF12 offers the maximum range, it drastically increases the Time on Air (ToA), leading to packet collisions in a mesh setup. SF7 provides sufficient range when combined with repeaters while keeping transmission times short.
+    \item \textbf{Bandwidth (BW):} 125 kHz. Standard bandwidth balancing range and data rate.
+    \item \textbf{Coding Rate (CR):} 4/5. Provides minimal forward error correction, reducing overhead since the mesh logic implements its own packet acknowledgment and retry mechanisms.
+\end{itemize}
+
+\subsection{Packet Format}
+All LoRa transmissions adhere to a custom binary packet structure to minimize payload size. 
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        cell/.style={draw, rectangle, minimum height=1cm, align=center, fill=yellow!20},
+        node distance=0cm
+    ]
+        \node[cell, minimum width=2cm] (dest) {Dest ID\\(1 Byte)};
+        \node[cell, minimum width=2cm, right=of dest] (src) {Source ID\\(1 Byte)};
+        \node[cell, minimum width=2cm, right=of src] (msgId) {Msg ID\\(1 Byte)};
+        \node[cell, minimum width=2cm, right=of msgId] (type) {Type\\(1 Byte)};
+        \node[cell, minimum width=4cm, right=of type, fill=green!20] (payload) {Payload\\(Variable Length)};
+        
+        \draw [decorate,decoration={brace,amplitude=5pt},xshift=0pt,yshift=2pt]
+        (dest.north west) -- (type.north east) node [black,midway,yshift=0.4cm] {Header (4 Bytes)};
+    \end{tikzpicture}
+    \caption{LoRa Packet Structure}
+    \label{fig:lora-packet}
+\end{figure}
+
+\subsection{Message Types}
+The \texttt{Type} byte dictates how the payload is parsed:
+\begin{itemize}
+    \item \texttt{0x01 (SOS):} Highest priority. Payload contains critical GPS and vital data. Nodes relay this immediately.
+    \item \texttt{0x02 (GPS):} Standard location update.
+    \item \texttt{0x03 (HEARTBEAT):} Sent periodically to update node routing tables and signify device online status.
+    \item \texttt{0x04 (TEXT):} Custom string messages sent from the mobile app to the dashboard, or vice-versa.
+\end{itemize}
+
+\subsection{Relay and Routing Logic}
+When a node receives a packet:
+\begin{enumerate}
+    \item It checks if the \texttt{Dest ID} matches its own ID. If yes, it processes the packet.
+    \item If not, it checks a local buffer to see if it has recently forwarded this \texttt{Msg ID} from this \texttt{Source ID}.
+    \item If not forwarded recently, it rebroadcasts the packet, decrementing a Time-To-Live (TTL) counter (embedded in the payload for standard messages) to prevent infinite loops.
+\end{enumerate}
+
+\section{BLE Protocol}
+The Wristband communicates with the Climber's phone via Bluetooth Low Energy (BLE). 
+The ESP32 on the wristband acts as a BLE Peripheral, hosting a custom GATT (Generic Attribute Profile) Server.
+\begin{itemize}
+    \item \textbf{Service UUID:} \texttt{4fafc201-1fb5-459e-8fcc-c5c9c331914b}
+    \item \textbf{Heart Rate Characteristic:} \texttt{beb5483e-36e1-4688-b7f5-ea07361b26a8} (Notify, Read)
+    \item \textbf{SpO2 Characteristic:} \texttt{8a7c2936-e8cc-4d37-84be-5bdba349e59d} (Notify, Read)
+\end{itemize}
+The sensor data is packed into byte arrays and pushed to the phone via GATT notifications at a frequency of 1 Hz.
+
+\section{WiFi and HTTP Protocol}
+The Base Camp Unit operates in WiFi SoftAP (Software Access Point) mode if a wireless connection to the dashboard is preferred over USB serial. It hosts a lightweight asynchronous web server.
+\begin{lstlisting}[language=C++, caption={ESP32 SoftAP Configuration Snippet}]
+WiFi.softAP("BaseCamp_Network", "mountain123");
+IPAddress IP = WiFi.softAPIP();
+\end{lstlisting}
+The HTTP server exposes RESTful endpoints:
+\begin{itemize}
+    \item \texttt{GET /data} - Returns the latest JSON array of received LoRa packets.
+    \item \texttt{POST /send} - Accepts JSON payloads from the dashboard to be broadcasted via LoRa to climbers.
+\end{itemize}
+
+\section{Serial JSON Protocol}
+The primary and most robust link between the Base Camp ESP32 and the Python Flask Dashboard is a direct USB Serial connection operating at \texttt{115200} baud. Data received from the LoRa mesh is encapsulated into JSON objects and printed to the serial port.
+
+\begin{lstlisting}[caption={Example Serial JSON Packet}]
+{
+  "timestamp": 1694770000,
+  "source_id": "CLIMBER_01",
+  "type": "GPS_VITALS",
+  "data": {
+    "lat": 7.2906,
+    "lng": 80.6337,
+    "hr": 85,
+    "spo2": 96
+  },
+  "rssi": -92
+}
+\end{lstlisting}
+The Flask application runs a background thread that continuously reads the serial port, parses these JSON packets, and emits them to the web frontend using WebSockets.

@@ -1,0 +1,75 @@
+\chapter{Maintenance \& Care}
+\label{ch:maintenance}
+
+Proper maintenance and care are essential to ensure the longevity and reliability of the Mountain Climber Health \& GPS Tracker system. Because the equipment is deployed in harsh outdoor environments, routine inspection and cleaning are highly recommended.
+
+\section{Cleaning Procedures for Outdoor Electronics}
+\label{sec:cleaning-procedures}
+
+Exposure to dirt, moisture, and sweat can degrade sensor performance and corrode connectors.
+\begin{itemize}
+    \item \textbf{Enclosures:} Wipe the exterior of the Climber Main Device, Wristband, and Repeaters with a slightly damp, lint-free cloth. Do not use harsh chemicals, solvents, or abrasive cleaners.
+    \item \textbf{Sensor Window:} The MAX30102 sensor on the Wristband requires a clean optical path. Gently wipe the glass window using a microfiber cloth and a small amount of isopropyl alcohol.
+    \item \textbf{Connectors and Ports:} Keep USB ports and antenna SMA connectors free of debris. Use a dry, soft-bristled brush or compressed air to remove dust.
+\end{itemize}
+
+\section{Battery Replacement Guide}
+\label{sec:battery-replacement}
+
+The system utilizes rechargeable 18650 Lithium-ion cells. Over time, battery capacity will naturally degrade.
+
+\begin{warningbox}
+Always handle 18650 Lithium-ion batteries with extreme care. Ensure the device is powered off before replacement. Insert the battery with the correct polarity. Using damaged, punctured, or swollen batteries can result in fire or explosion.
+\end{warningbox}
+
+\textbf{Replacement Steps:}
+\begin{enumerate}
+    \item Turn off the device using the main power switch.
+    \item Unscrew the protective battery compartment cover.
+    \item Carefully remove the depleted 18650 cell.
+    \item Insert a fully charged, high-quality 18650 Li-ion battery, ensuring the positive (+) and negative (-) terminals align with the markings inside the compartment.
+    \item Securely tighten the compartment cover to maintain the device's weather resistance.
+\end{enumerate}
+
+\section{Firmware Update Procedure}
+\label{sec:firmware-update}
+
+Keeping the device firmware up-to-date ensures access to the latest features, bug fixes, and performance improvements. Updates can be performed over-the-air (OTA) or via USB.
+
+\subsection{Over-The-Air (OTA) Updates}
+\begin{itemize}
+    \item Connect the device to the mobile application via BLE.
+    \item In the app, navigate to Settings $>$ Firmware Update.
+    \item If an update is available on the portal, the app will download it and transmit the binary to the device via BLE. Do not power off the device during this process.
+\end{itemize}
+
+\subsection{USB Updates}
+\begin{itemize}
+    \item Download the latest firmware binary from the official Supabase Portal.
+    \item Connect the ESP32 device to your computer using a data-capable micro-USB cable.
+    \item Use the provided flashing tool (or Espressif esptool) to upload the firmware directly over the serial connection.
+\end{itemize}
+
+\section{Storage Guidelines}
+\label{sec:storage-guidelines}
+
+When not in use, the equipment should be stored properly to prevent component degradation.
+\begin{itemize}
+    \item \textbf{Temperature:} Store all devices in a cool, dry place at room temperature (approximately $15^\circ$C to $25^\circ$C). Avoid leaving devices in direct sunlight or hot vehicles.
+    \item \textbf{Humidity:} Keep the storage area well-ventilated and dry (below 60\% relative humidity).
+    \item \textbf{Battery Level:} Before long-term storage, charge or discharge the batteries to approximately 50\% capacity. Storing Li-ion batteries fully charged or completely depleted can reduce their lifespan.
+\end{itemize}
+
+\section{Recommended Inspection Schedule}
+\label{sec:inspection-schedule}
+
+\begin{itemize}
+    \item \textbf{Pre-Expedition:} Perform a full functional test, including battery check, sensor validation, and range test.
+    \item \textbf{Post-Expedition:} Clean all devices, inspect enclosures for physical damage, and check antennas for structural integrity.
+    \item \textbf{Bi-Annually:} Perform battery capacity tests and inspect internal seals and O-rings for signs of wear.
+\end{itemize}
+
+\section{Warranty Information}
+\label{sec:warranty-info}
+
+\textit{[Placeholder for comprehensive legal warranty information, coverage periods, and terms and conditions.]}

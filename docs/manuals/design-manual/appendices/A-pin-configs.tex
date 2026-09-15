@@ -1,0 +1,87 @@
+\chapter{Pin Configuration Tables}
+\label{app:pin_configs}
+
+This appendix provides the complete General Purpose Input/Output (GPIO) mapping for all microcontrollers utilized in the Mountain Climber Health \& GPS Tracker system.
+
+\section{Climber Main Device (ESP32)}
+\begin{table}[htbp]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{clll}
+        \toprule
+        \textbf{GPIO Number} & \textbf{Connected To} & \textbf{Function} & \textbf{Protocol} \\
+        \midrule
+        GPIO 5  & SX1278 NSS & LoRa Chip Select & SPI \\
+        GPIO 18 & SX1278 SCK & SPI Clock & SPI \\
+        GPIO 19 & SX1278 MISO & SPI Master In Slave Out & SPI \\
+        GPIO 23 & SX1278 MOSI & SPI Master Out Slave In & SPI \\
+        GPIO 14 & SX1278 RST & LoRa Reset & Digital Out \\
+        GPIO 26 & SX1278 DIO0 & LoRa Interrupt & Digital In \\
+        GPIO 21 & MAX30102 SDA & I2C Data & I2C \\
+        GPIO 22 & MAX30102 SCL & I2C Clock & I2C \\
+        GPIO 16 & NEO-6M TX & GPS Data Transmit & UART2 RX \\
+        GPIO 17 & NEO-6M RX & GPS Data Receive & UART2 TX \\
+        GPIO 4  & Active Buzzer & Audio Alarm & Digital Out/PWM \\
+        GPIO 25 & RGB LED Red & Visual Status Indicator & Digital Out \\
+        GPIO 33 & RGB LED Green & Visual Status Indicator & Digital Out \\
+        GPIO 32 & RGB LED Blue & Visual Status Indicator & Digital Out \\
+        GPIO 13 & Tactile Push Button & SOS Trigger & Digital In (Pull-up) \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\section{Wristband Device (ESP32-C3 / PICO)}
+\begin{table}[htbp]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{clll}
+        \toprule
+        \textbf{GPIO Number} & \textbf{Connected To} & \textbf{Function} & \textbf{Protocol} \\
+        \midrule
+        GPIO 21 & MAX30102 SDA & I2C Data & I2C \\
+        GPIO 22 & MAX30102 SCL & I2C Clock & I2C \\
+        GPIO 9  & Battery Voltage ADC & Power Monitoring & Analog In \\
+        GPIO 4  & Haptic Motor & Vibration Alert & Digital Out/PWM \\
+        GPIO 5  & System LED & Status Indicator & Digital Out \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+\section{Repeater Node (ESP32)}
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{clll}
+        \toprule
+        \textbf{GPIO Number} & \textbf{Connected To} & \textbf{Function} & \textbf{Protocol} \\
+        \midrule
+        GPIO 5  & SX1278 NSS & LoRa Chip Select & SPI \\
+        GPIO 18 & SX1278 SCK & SPI Clock & SPI \\
+        GPIO 19 & SX1278 MISO & SPI Master In Slave Out & SPI \\
+        GPIO 23 & SX1278 MOSI & SPI Master Out Slave In & SPI \\
+        GPIO 14 & SX1278 RST & LoRa Reset & Digital Out \\
+        GPIO 26 & SX1278 DIO0 & LoRa Interrupt & Digital In \\
+        GPIO 2  & Status LED & Node Active Indicator & Digital Out \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Base Camp Unit (ESP32)}
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{clll}
+        \toprule
+        \textbf{GPIO Number} & \textbf{Connected To} & \textbf{Function} & \textbf{Protocol} \\
+        \midrule
+        GPIO 5  & SX1278 NSS & LoRa Chip Select & SPI \\
+        GPIO 18 & SX1278 SCK & SPI Clock & SPI \\
+        GPIO 19 & SX1278 MISO & SPI Master In Slave Out & SPI \\
+        GPIO 23 & SX1278 MOSI & SPI Master Out Slave In & SPI \\
+        GPIO 14 & SX1278 RST & LoRa Reset & Digital Out \\
+        GPIO 26 & SX1278 DIO0 & LoRa Interrupt & Digital In \\
+        TX0 (GPIO 1)& PC USB Serial & JSON Data to Dashboard & UART0 \\
+        RX0 (GPIO 3)& PC USB Serial & Commands from Dashboard& UART0 \\
+        \bottomrule
+    \end{tabular}
+\end{table}

@@ -1,0 +1,154 @@
+\chapter{Database Design}
+\label{ch:database_design}
+
+The Summit Gear web portal and device management system rely on a robust, relational database architecture hosted on Supabase, a managed PostgreSQL platform. This chapter details the database schema, entity relationships, security policies, and the SQL statements used for initialization.
+
+\section{Entity-Relationship Model}
+
+The database schema is designed to handle e-commerce operations, user management, and IoT device registration. The core entities include users, products, orders, order items, devices, and firmware releases. Figure \ref{fig:er_diagram} illustrates the relationships between these entities.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=2.5cm and 3cm,
+        every node/.style={font=\sffamily\small},
+        entity/.style={draw, rectangle, rounded corners, fill=blue!10, text centered, text width=3.5cm, minimum height=1cm, font=\bfseries\sffamily},
+        attribute/.style={draw, ellipse, fill=yellow!20, text centered, text width=2.5cm},
+        relationship/.style={draw, diamond, aspect=2, fill=green!20, text centered, text width=2cm},
+        line/.style={draw, -stealth}
+    ]
+        % Entities
+        \node[entity] (users) {Profiles (Users)};
+        \node[entity, below right=1cm and 1cm of users] (orders) {Orders};
+        \node[entity, below=1.5cm of orders] (order_items) {Order\_Items};
+        \node[entity, left=1.5cm of order_items] (products) {Products};
+        \node[entity, above right=1cm and 1cm of users] (devices) {Devices};
+        \node[entity, right=1.5cm of devices] (firmware) {Firmware};
+
+        % Relationships
+        \draw[line, dashed] (users.east) -- node[above, font=\scriptsize] {1:N} (orders.north west);
+        \draw[line, dashed] (orders.south) -- node[right, font=\scriptsize] {1:N} (order_items.north);
+        \draw[line, dashed] (products.east) -- node[above, font=\scriptsize] {1:N} (order_items.west);
+        \draw[line, dashed] (users.north east) -- node[above, font=\scriptsize] {1:N} (devices.south west);
+        \draw[line, dashed] (products.north) |- node[left, font=\scriptsize] {1:N} (devices.west);
+        \draw[line, dashed] (firmware.west) -- node[above, font=\scriptsize] {1:N} (devices.east);
+    \end{tikzpicture}
+    \caption{Entity-Relationship Diagram of the Supabase PostgreSQL Schema.}
+    \label{fig:er_diagram}
+\end{figure}
+
+\section{Table Definitions and SQL Schema}
+
+The relational schema is implemented in PostgreSQL. The `profiles` table is automatically linked to Supabase's built-in authentication system.
+
+\subsection{SQL Initialization Script}
+
+\begin{lstlisting}[language=SQL, caption=PostgreSQL Schema Creation Script, label=lst:sql_schema]
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Profiles (extends Supabase Auth Users)
+CREATE TABLE profiles (
+    id UUID REFERENCES auth.users(id) PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    full_name TEXT,
+    role TEXT DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Products
+CREATE TABLE products (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    image_url TEXT,
+    category TEXT,
+    stock INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Orders
+CREATE TABLE orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES profiles(id) NOT NULL,
+    status TEXT DEFAULT 'pending',
+    total DECIMAL(10, 2) NOT NULL,
+    shipping_address TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Order Items
+CREATE TABLE order_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id),
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- Firmware
+CREATE TABLE firmware (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    version TEXT NOT NULL,
+    device_type TEXT NOT NULL,
+    download_url TEXT NOT NULL,
+    release_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Devices
+CREATE TABLE devices (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    serial_number TEXT UNIQUE NOT NULL,
+    user_id UUID REFERENCES profiles(id),
+    product_id UUID REFERENCES products(id),
+    firmware_version TEXT,
+    registered_at TIMESTAMPTZ DEFAULT NOW()
+);
+\end{lstlisting}
+
+\section{Row-Level Security (RLS) Policies}
+
+To ensure data privacy and security, Supabase's Row-Level Security (RLS) is heavily utilized. RLS ensures that users can only access or modify data that belongs to them, while administrators retain full access.
+
+\begin{infobox}
+Row-Level Security is a PostgreSQL feature that restricts which rows are returned by normal queries, or are permitted for data modification commands, based on the user executing the query.
+\end{infobox}
+
+\subsection{Profiles Policy}
+Users can only view and update their own profiles.
+\begin{lstlisting}[language=SQL]
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own profile" ON profiles
+    FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = id);
+\end{lstlisting}
+
+\subsection{Orders and Devices Policy}
+Customers can only view their own orders and registered devices.
+\begin{lstlisting}[language=SQL]
+-- Orders
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own orders" ON orders
+    FOR SELECT USING (auth.uid() = user_id);
+
+-- Devices
+ALTER TABLE devices ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own devices" ON devices
+    FOR SELECT USING (auth.uid() = user_id);
+\end{lstlisting}
+
+\subsection{Public Access Policies}
+The \texttt{products} and \texttt{firmware} tables are publicly readable, allowing unauthenticated users to browse the catalog and devices to fetch firmware updates without complex authentication handshakes.
+
+\begin{lstlisting}[language=SQL]
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Products are publicly visible" ON products
+    FOR SELECT USING (true);
+
+ALTER TABLE firmware ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Firmware is publicly visible" ON firmware
+    FOR SELECT USING (true);
+\end{lstlisting}

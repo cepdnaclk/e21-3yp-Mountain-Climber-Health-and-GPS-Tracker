@@ -1,0 +1,46 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Project Motivation}
+Mountaineering and high-altitude hiking are physically demanding activities fraught with environmental hazards. Every year, numerous accidents and fatalities occur due to unpredictable weather, sudden health complications such as Acute Mountain Sickness (AMS), and getting lost in remote terrains. A critical factor exacerbating these situations is the lack of reliable, off-grid communication. Conventional cellular networks are typically unavailable in mountainous regions, meaning that when an emergency strikes, climbers cannot promptly call for help. This results in significantly delayed search-and-rescue (SAR) operations, drastically reducing the chances of survival for the victims. The Mountain Climber Health and GPS Tracker project was conceived to address this critical gap by providing a robust, standalone communication and health monitoring system that operates independently of traditional infrastructure.
+
+\section{Problem Statement}
+The core problem addressed by this project is the inability to reliably monitor the vital signs of mountaineers and track their geographical locations in areas devoid of cellular coverage. When a climber faces distress—whether due to physical injury, cardiac issues, or spatial disorientation—there is currently no reliable method for them to automatically alert their base camp or fellow climbers. The lack of an integrated system that combines real-time health telemetry, continuous GPS tracking, and decentralized long-range communication severely hampers the effectiveness and timeliness of emergency response in alpine environments.
+
+\section{Project Objectives}
+To address the aforementioned challenges, this project aims to achieve the following specific objectives:
+\begin{itemize}
+    \item \textbf{Real-Time Health Monitoring:} Continuously measure and record critical vital signs, including heart rate and blood oxygen saturation (SpO$_2$), using a wearable device to detect early signs of physiological distress.
+    \item \textbf{Continuous GPS Tracking:} Accurately track the climber's geographical coordinates in real-time, allowing base camp operators to monitor their exact location and movement trajectory.
+    \item \textbf{Off-Grid LoRa Mesh Communication:} Establish a reliable, low-power, long-range communication network using LoRa technology, configured in a mesh topology to overcome the line-of-sight limitations typical of mountainous terrains.
+    \item \textbf{Automated Distress Signaling:} Implement an automated SOS alert mechanism that triggers immediately if a climber's vital signs fall outside safe thresholds or if they manually initiate a panic sequence.
+    \item \textbf{Cross-Platform Visualization:} Develop intuitive user interfaces, including a mobile application for climbers and a comprehensive desktop dashboard for base camp operators, to visualize data and facilitate communication.
+\end{itemize}
+
+\section{Project Scope}
+\subsection{Inclusions}
+The scope of this project encompasses the design, development, and integration of both hardware and software components. This includes:
+\begin{itemize}
+    \item The design and fabrication of the Climber Main Device, Wristband, Repeater nodes, and Base Camp Unit using ESP32 microcontrollers.
+    \item Implementation of a custom LoRa communication protocol utilizing SX1278 transceivers at 433 MHz.
+    \item Development of a BLE communication link between the Wristband and the user's smartphone.
+    \item Development of a cross-platform mobile application using Flutter/Dart for local monitoring and messaging.
+    \item Creation of a Python Flask-based local dashboard for the base camp, featuring real-time maps and health data visualization.
+    \item A web portal built with Next.js and Supabase for device registration and e-commerce functionalities related to mountaineering gear.
+\end{itemize}
+
+\subsection{Exclusions}
+The following aspects are explicitly excluded from the current scope of the project:
+\begin{itemize}
+    \item Integration with global satellite communication networks (e.g., Iridium or Inmarsat).
+    \item Clinical certification of the health monitoring sensors; the devices are intended for informational and preliminary warning purposes, not as certified medical equipment.
+    \item Mass production and commercial packaging of the hardware devices.
+\end{itemize}
+
+\section{Document Structure Overview}
+This design manual is organized to provide a comprehensive understanding of the system's architecture and engineering details:
+\begin{itemize}
+    \item \textbf{Chapter 2: System Architecture} details the overall structural design, data flow, and deployment strategy of the system.
+    \item \textbf{Chapter 3: Hardware Design} provides an in-depth look at the electronic components, circuit designs, and power management for each physical device.
+    \item \textbf{Chapter 4: Communication Protocols} explains the proprietary data formats and communication standards implemented across LoRa, BLE, WiFi, and Serial interfaces.
+\end{itemize}

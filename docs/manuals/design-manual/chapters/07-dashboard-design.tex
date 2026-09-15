@@ -1,0 +1,91 @@
+\chapter{Dashboard Design}
+\label{ch:dashboard_design}
+
+The Base Camp Dashboard is a critical component operated by the expedition monitoring team. It provides a comprehensive overview of all climbers in the network, visualizing their health data, GPS locations, and managing communications.
+
+\section{Application Architecture}
+
+The dashboard is built using Python with the Flask web framework. It operates as a local web server, rendering an interactive frontend while managing serial communications with the Base Camp LoRa Receiver in the backend.
+
+\subsection{Threading Model}
+
+To prevent the web server from blocking while waiting for serial data, the application employs a multi-threaded architecture.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=2.5cm,
+        box/.style={rectangle, draw, minimum width=3.2cm, minimum height=1.5cm, align=center, fill=gray!10, font=\scriptsize},
+        arrow/.style={->, thick},
+        label/.style={font=\scriptsize, align=center}
+    ]
+    
+    \node[box] (hardware) {Base Camp ESP32 \\ (USB Serial)};
+    \node[box, right=2cm of hardware, fill=blue!10] (serial) {Serial Reader Thread \\ (Background)};
+    \node[box, right=2cm of serial, fill=green!10] (flask) {Flask Main Thread \\ (Web Server)};
+    \node[box, below=1.5cm of flask, fill=yellow!10] (client) {Web Browser \\ (Dashboard UI)};
+    
+    \draw[arrow] (hardware) -- node[label, above] {115200 baud} (serial);
+    \draw[arrow] (serial) -- node[label, above] {Shared State / Queue} (flask);
+    \draw[<->, thick] (flask) -- node[label, right] {HTTP / WebSockets} (client);
+    
+    \end{tikzpicture}
+    \caption{Dashboard Threading Architecture}
+    \label{fig:dashboard_threading}
+\end{figure}
+
+The \textbf{Serial Reader Thread} continuously reads JSON payloads from the USB serial port connected to the ESP32. It parses this data and updates a thread-safe shared state object. The \textbf{Flask Main Thread} handles incoming HTTP requests from the browser and serves the latest data from the shared state.
+
+\section{Real-Time Map Rendering}
+
+The dashboard features a live tracking map implemented using HTML5 Canvas.
+
+\subsection{Coordinate Transformation}
+Since the dashboard must operate completely offline without access to tile servers (like Google Maps or Mapbox), it plots climbers relative to the base camp. The Haversine formula is used to calculate the distance and bearing of each climber relative to the base camp's GPS origin. These polar coordinates are then converted to Cartesian coordinates $(x, y)$ and scaled to fit the HTML5 Canvas dimensions.
+
+\subsection{Climber Marker Rendering}
+The canvas dynamically renders markers for each climber. 
+\begin{tipbox}
+Markers are color-coded based on the climber's status: Green for normal, Orange for warning (e.g., missed heartbeat), and flashing Red for an active SOS.
+\end{tipbox}
+
+\section{SOS Alert Workflow}
+
+Handling emergencies swiftly is the primary objective of the system.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=2cm,
+        box/.style={rectangle, draw, minimum width=2.5cm, minimum height=1cm, align=center, fill=orange!10, font=\scriptsize},
+        decision/.style={diamond, draw, minimum width=2.5cm, minimum height=2.5cm, align=center, fill=red!10, font=\scriptsize},
+        arrow/.style={->, thick},
+        label/.style={font=\scriptsize, align=center}
+    ]
+    
+    \node[box] (receive) {Receive Packet};
+    \node[decision, below=1.5cm of receive] (check) {Is SOS\\Flag Set?};
+    \node[box, right=2cm of check] (normal) {Update Vitals/Map};
+    \node[box, below=1.5cm of check, fill=red!20] (trigger) {Trigger Audio/Visual\\Alarm in UI};
+    \node[box, below=1.5cm of trigger] (log) {Log Event to CSV};
+    
+    \draw[arrow] (receive) -- (check);
+    \draw[arrow] (check) -- node[label, above] {No} (normal);
+    \draw[arrow] (check) -- node[label, right] {Yes} (trigger);
+    \draw[arrow] (trigger) -- (log);
+    
+    \end{tikzpicture}
+    \caption{SOS Alert Processing Flowchart}
+    \label{fig:sos_flowchart}
+\end{figure}
+
+\section{System Features}
+
+\subsection{Two-Way Messaging}
+The dashboard includes a chat interface. Messages typed in the web UI are sent via an API endpoint to the Flask backend, which formats them into a JSON payload and transmits them over the serial port to the Base Camp ESP32. The ESP32 then broadcasts the message over the LoRa network.
+
+\subsection{CSV Export Logic}
+For post-expedition analysis, all received data is logged. The backend utilizes Python's built-in \texttt{csv} module to append incoming sensor data, GPS coordinates, and timestamps to a daily log file, ensuring no data is lost during the mission.
+
+\subsection{Packaging and Deployment}
+The decision was made to embed the HTML, CSS, and JS directly within Python strings (or simple templates) rather than managing a separate frontend build process. This simplifies deployment. The entire Flask application, including the embedded web assets, is compiled into a single executable binary using \textbf{PyInstaller}. This allows expedition staff to run the dashboard on Windows or macOS laptops simply by double-clicking an executable, without needing to install Python or configure environments.

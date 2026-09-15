@@ -1,0 +1,152 @@
+% =========================================================================
+%  Shared LaTeX Preamble — Mountain Climber Health & GPS Tracker
+%  Used by both User Manual and Design Manual
+% =========================================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% ── Page Geometry ──
+\usepackage[a4paper, margin=2.5cm, top=3cm, bottom=3cm]{geometry}
+
+% ── Colors ──
+\usepackage{xcolor}
+\definecolor{teal600}{HTML}{0D9488}
+\definecolor{teal700}{HTML}{0F766E}
+\definecolor{teal100}{HTML}{CCFBF1}
+\definecolor{slate800}{HTML}{1E293B}
+\definecolor{slate600}{HTML}{475569}
+\definecolor{slate400}{HTML}{94A3B8}
+\definecolor{amber500}{HTML}{F59E0B}
+\definecolor{red500}{HTML}{EF4444}
+\definecolor{blue500}{HTML}{3B82F6}
+\definecolor{green600}{HTML}{16A34A}
+\definecolor{chaptergray}{HTML}{F1F5F9}
+
+% ── Typography ──
+\usepackage{titlesec}
+\usepackage{titletoc}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{slate800}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{teal700}}{}{0em}{\thesection\quad}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{slate800}}{}{0em}{\thesubsection\quad}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{slate600}}{}{0em}{\thesubsubsection\quad}
+
+% ── Headers & Footers ──
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{slate400}\leftmark}
+\fancyhead[R]{\small\color{slate400}\rightmark}
+\fancyfoot[C]{\small\color{slate400}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ── Graphics & Figures ──
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\graphicspath{{figures/}{../shared/figures/}}
+
+% ── Tables ──
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{multirow}
+\newcommand{\tablemark}{\rowcolor{chaptergray}}
+
+% ── Code Listings ──
+\usepackage{listings}
+\lstset{
+  basicstyle=\small\ttfamily,
+  backgroundcolor=\color{chaptergray},
+  frame=single,
+  rulecolor=\color{slate400},
+  keywordstyle=\color{teal700}\bfseries,
+  commentstyle=\color{slate400}\itshape,
+  stringstyle=\color{amber500},
+  breaklines=true,
+  numbers=left,
+  numberstyle=\tiny\color{slate400},
+  numbersep=8pt,
+  tabsize=2,
+  showstringspaces=false
+}
+
+% ── TikZ for Diagrams ──
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc, backgrounds, decorations.markings, decorations.pathreplacing}
+
+% ── Callout Boxes ──
+\usepackage[most]{tcolorbox}
+
+\newtcolorbox{infobox}[1][]{
+  colback=teal100!30,
+  colframe=teal600,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={\textcolor{white}{ℹ\quad Info}},
+  #1
+}
+
+\newtcolorbox{warningbox}[1][]{
+  colback=amber500!10,
+  colframe=amber500,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={\textcolor{white}{⚠\quad Warning}},
+  #1
+}
+
+\newtcolorbox{cautionbox}[1][]{
+  colback=red500!10,
+  colframe=red500,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={\textcolor{white}{⛔\quad Caution}},
+  #1
+}
+
+\newtcolorbox{tipbox}[1][]{
+  colback=green600!10,
+  colframe=green600,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={\textcolor{white}{💡\quad Tip}},
+  #1
+}
+
+% ── Hyperlinks & Cross-references ──
+\usepackage[colorlinks=true, linkcolor=teal700, urlcolor=blue500, citecolor=teal600]{hyperref}
+\usepackage{bookmark}
+
+% ── Misc ──
+\usepackage{enumitem}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+
+% ── Image Placeholder Command ──
+\newcommand{\imagePlaceholder}[3][0.8\textwidth]{%
+  \begin{figure}[H]
+    \centering
+    \fcolorbox{slate400}{chaptergray}{%
+      \parbox{#1}{%
+        \vspace{2cm}
+        \centering
+        \textcolor{slate400}{\large\textbf{[ IMAGE PLACEHOLDER ]}}\\[6pt]
+        \textcolor{slate600}{\texttt{\detokenize{#2}}}
+        \vspace{2cm}
+      }%
+    }
+    \caption{#3}
+    \label{fig:#2}
+  \end{figure}
+}

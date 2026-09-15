@@ -1,0 +1,111 @@
+\chapter{Technical Specifications}
+\label{app:technical-specifications}
+
+This appendix provides the detailed technical specifications for all components of the Mountain Climber Health \& GPS Tracker system.
+
+\section{Communication Modules}
+
+\begin{table}[htbp]
+\centering
+\caption{LoRa Specifications (SX1278)}
+\label{tab:spec-lora}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specification} \\ \midrule
+Operating Frequency & 433 MHz (ISM Band) \\
+Spreading Factor (SF) & SF7 \\
+Bandwidth (BW) & 125 kHz \\
+Coding Rate (CR) & 4/5 \\
+Transmission Power & Up to +20 dBm \\
+Receiver Sensitivity & -148 dBm \\
+Maximum Range (LOS) & 2 -- 5 km \\
+Topology & Mesh / Point-to-Point \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Bluetooth Low Energy (BLE) \& WiFi Specifications}
+\label{tab:spec-ble-wifi}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specification} \\ \midrule
+BLE Version & Bluetooth 4.2 / 5.0 (ESP32 native) \\
+BLE Range & Up to 10 meters \\
+WiFi Standard & 802.11 b/g/n (2.4 GHz) \\
+WiFi Mode & SoftAP (Base Camp Unit) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Sensors and Location}
+
+\begin{table}[htbp]
+\centering
+\caption{GPS Module Specifications (NEO-6M)}
+\label{tab:spec-gps}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specification} \\ \midrule
+Receiver Type & 50-channel u-blox 6 engine \\
+Position Accuracy & 2.5 meters CEP \\
+Cold Start Time & $\approx$ 27 seconds \\
+Warm Start Time & $\approx$ 27 seconds \\
+Hot Start Time & $\approx$ 1 second \\
+Update Rate & 1 Hz to 5 Hz \\
+Antenna Type & Active Ceramic Patch Antenna \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Health Sensor Specifications (MAX30102)}
+\label{tab:spec-sensor}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specification} \\ \midrule
+Sensor Type & Integrated Pulse Oximeter and Heart Rate Monitor \\
+Light Sources & Red (660nm) and IR (880nm) LEDs \\
+SpO2 Accuracy & $\pm$ 2\% (range 70\%-100\%) \\
+Heart Rate Range & 30 to 250 BPM \\
+Interface & I2C \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Power and Physical Specifications}
+
+\begin{table}[htbp]
+\centering
+\caption{Battery and Power Specifications}
+\label{tab:spec-battery}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specification} \\ \midrule
+Battery Type & 18650 Lithium-ion Cell \\
+Nominal Voltage & 3.7 V \\
+Capacity & 2600 mAh - 3400 mAh \\
+Charge Voltage & 4.2 V \\
+Charge Time & $\approx$ 3-4 hours (via standard 1A charger) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Physical and Environmental Specifications}
+\label{tab:spec-physical}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specification} \\ \midrule
+Climber Main Device Dimensions & $100 \times 60 \times 35$ mm \\
+Wristband Dimensions & $45 \times 30 \times 15$ mm (excluding strap) \\
+Repeater Dimensions & $120 \times 80 \times 40$ mm \\
+Main Device Weight & $\approx$ 180 g (including battery) \\
+Operating Temperature & $-10^\circ$C to $+50^\circ$C \\
+IP Rating & IP65 (Dust tight, protected against water jets) \\
+\bottomrule
+\end{tabular}
+\end{table}

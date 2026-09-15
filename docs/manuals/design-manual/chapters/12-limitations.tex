@@ -1,0 +1,33 @@
+\chapter{Limitations \& Future Work}
+\label{ch:limitations}
+
+While the current prototype of the Mountain Climber Health \& GPS Tracker successfully demonstrates the core functionalities of off-grid safety monitoring, several limitations were identified during development and testing. This chapter outlines these constraints and proposes future enhancements for a production-ready system.
+
+\section{Known Limitations}
+
+\begin{itemize}
+    \item \textbf{GPS Accuracy in Dense Canopy:} The Ublox NEO-6M module struggles to acquire a fast and accurate satellite fix under dense forest canopies or deep ravines, potentially delaying location updates during an emergency.
+    \item \textbf{LoRa Line-of-Sight Dependency:} While 433MHz penetrates vegetation better than 2.4GHz, extreme geological features (steep valleys, massive rock faces) severely attenuate the signal, necessitating careful, manual placement of Repeater nodes.
+    \item \textbf{Motion Artifacts on MAX30102:} The optical pulse oximetry sensor is highly sensitive to ambient light and movement. Vigorous climbing motions can introduce noise, leading to temporarily inaccurate heart rate or SpO2 readings.
+    \item \textbf{Single-Channel LoRa Limitations:} The system currently uses a single LoRa channel and spreading factor. It lacks frequency hopping or adaptive data rates, meaning network collisions can occur if many devices transmit simultaneously in a dense deployment.
+    \item \textbf{Battery Constraints:} Constantly polling GPS and listening on the LoRa radio draws significant current. Without power optimization, the 18650 battery life is limited to approximately 18-24 hours of continuous operation.
+\end{itemize}
+
+\section{Future Improvements}
+
+To address these limitations and commercialize the system, the following future works are proposed:
+
+\subsection{Hardware Enhancements}
+\begin{itemize}
+    \item \textbf{Multi-channel LoRa Gateway:} Upgrading the Base Camp unit to a multi-channel LoRaWAN gateway (e.g., using SX1302) to handle hundreds of concurrent nodes and implement Adaptive Data Rate (ADR) protocols.
+    \item \textbf{Solar Energy Harvesting:} Integrating small, flexible solar panels into the device enclosures or backpacks to trickle-charge the lithium batteries, significantly extending deployment life.
+    \item \textbf{Satellite Communication Fallback:} Integrating an Iridium or Swarm satellite modem for extreme emergencies when the climber falls completely outside the LoRa mesh network range.
+    \item \textbf{IP67 Waterproofing:} Designing injection-molded enclosures with silicone gaskets to achieve true IP67 weather resistance for harsh alpine environments.
+\end{itemize}
+
+\subsection{Software \& System Enhancements}
+\begin{itemize}
+    \item \textbf{Mesh Routing Protocol:} Implementing an intelligent, self-healing mesh routing protocol (like Reticulum or Meshtastic's underlying logic) to replace the current static repeater logic.
+    \item \textbf{Machine Learning Health Predictions:} Developing ML models that run on the dashboard to analyze vitals trends over time, predicting altitude sickness or exhaustion before acute symptoms appear.
+    \item \textbf{Cloud Dashboard Sync:} Developing a mechanism for the local Base Camp dashboard to opportunistically sync its data to the Next.js cloud portal whenever an intermittent internet connection (e.g., via Starlink or cellular) is available.
+\end{itemize}

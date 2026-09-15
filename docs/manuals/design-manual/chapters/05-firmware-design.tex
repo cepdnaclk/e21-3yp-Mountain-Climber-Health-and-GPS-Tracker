@@ -1,0 +1,158 @@
+\chapter{Firmware Design}
+\label{ch:firmware_design}
+
+This chapter details the firmware design for the microcontrollers operating within the Mountain Climber Health \& GPS Tracker system. The firmware handles critical tasks including sensor data acquisition, wireless communication (BLE and LoRa), power management, and real-time processing.
+
+\section{Operational States}
+
+The firmware on the Main Climber Device and the Wristband operates using finite state machines to ensure deterministic behavior and efficient power utilization.
+
+\subsection{Main Climber Device State Machine}
+
+The Main Climber Device acts as the central hub for a climber, coordinating between the wristband (via BLE) and the mesh network (via LoRa).
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance = 1.5cm and 2cm,
+        state/.style = {circle, draw, minimum size=2cm, align=center, fill=blue!10, font=\scriptsize\bfseries},
+        edge/.style = {->, thick},
+        label/.style = {font=\scriptsize, align=center}
+    ]
+    \node[state] (init) {INIT};
+    \node[state, right=2cm of init] (scan) {SCANNING};
+    \node[state, right=2cm of scan] (conn) {CONNECTED};
+    \node[state, below=2cm of conn] (mon) {MONITORING};
+    \node[state, left=2.5cm of mon, fill=red!20] (sos) {SOS\_ACTIVE};
+    
+    \draw[edge] (init) -- node[label, above] {setup()} (scan);
+    \draw[edge] (scan) -- node[label, above] {BLE Found} (conn);
+    \draw[edge] (conn) -- node[label, right] {Sync Done} (mon);
+    \draw[edge, bend right=25] (mon) to node[label, below right] {Disconnect} (scan);
+    \draw[edge] (mon) -- node[label, above] {Critical\\Vitals/Button} (sos);
+    \draw[edge, bend left=25] (sos) to node[label, left] {Reset} (init);
+    \end{tikzpicture}
+    \caption{State Machine Diagram for Main Climber Device}
+    \label{fig:main_state_machine}
+\end{figure}
+
+\subsection{Wristband State Machine}
+
+The wristband's primary role is to acquire health data and transmit it via BLE.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance = 2.5cm,
+        state/.style = {circle, draw, minimum size=1.6cm, align=center, fill=green!10, font=\scriptsize\bfseries},
+        edge/.style = {->, thick},
+        label/.style = {font=\scriptsize, align=center}
+    ]
+    \node[state] (init) {INIT};
+    \node[state, right=2cm of init] (adv) {ADV};
+    \node[state, right=2cm of adv] (conn) {CONN};
+    \node[state, below=2cm of adv] (sleep) {SLEEP};
+    
+    \draw[edge] (init) -- node[label, above] {Ready} (adv);
+    \draw[edge, bend left=25] (adv) to node[label, above] {Paired} (conn);
+    \draw[edge, bend left=25] (conn) to node[label, below] {Lost} (adv);
+    \draw[edge] (adv) -- node[label, left] {Timeout} (sleep);
+    \draw[edge] (conn) |- node[label, near end, right] {Low Bat} (sleep);
+    \draw[edge, bend left=45] (sleep) to node[label, left] {Wake IRQ} (init);
+    \end{tikzpicture}
+    \caption{State Machine Diagram for Wristband}
+    \label{fig:wristband_state_machine}
+\end{figure}
+
+\section{Key Algorithms}
+
+\subsection{Distance Calculation (Haversine Formula)}
+
+To calculate the distance between climbers or between a climber and the base camp, the firmware utilizes the Haversine formula. This computes the great-circle distance between two points on a sphere given their longitudes and latitudes.
+
+The formula is defined as:
+\begin{equation}
+a = \sin^2\left(\frac{\Delta \varphi}{2}\right) + \cos \varphi_1 \cdot \cos \varphi_2 \cdot \sin^2\left(\frac{\Delta \lambda}{2}\right)
+\end{equation}
+\begin{equation}
+c = 2 \cdot \text{atan2}\left(\sqrt{a}, \sqrt{1-a}\right)
+\end{equation}
+\begin{equation}
+d = R \cdot c
+\end{equation}
+Where:
+\begin{itemize}
+    \item $\varphi_1, \varphi_2$ are the latitudes of point 1 and point 2 (in radians).
+    \item $\Delta \varphi = \varphi_2 - \varphi_1$
+    \item $\Delta \lambda = \lambda_2 - \lambda_1$ (difference in longitude, in radians).
+    \item $R$ is the Earth's radius (mean radius = 6,371 km).
+\end{itemize}
+
+\subsection{Health Threshold Detection}
+
+The firmware continuously evaluates the readings from the MAX30102 sensor. Normal heart rates typically fall between 60 to 100 bpm, while SpO2 levels should ideally remain above 95\%. In high-altitude environments, SpO2 can naturally drop, but dangerous hypoxia must be identified.
+
+The threshold algorithm triggers an automatic SOS alert if:
+\begin{itemize}
+    \item Heart Rate (HR) $< 40$ bpm OR HR $> 120$ bpm
+    \item SpO2 $< 90\%$
+\end{itemize}
+
+\begin{lstlisting}[language=C++, caption={Health Threshold Checking Algorithm}, label={lst:health_check}]
+void checkHealthThresholds(int hr, int spo2) {
+    bool isEmergency = false;
+    
+    if (hr < 40 || hr > 120) {
+        isEmergency = true;
+        logWarning("Abnormal Heart Rate detected!");
+    }
+    
+    if (spo2 < 90 && spo2 > 0) { // Ignore 0 which means no finger attached
+        isEmergency = true;
+        logWarning("Low SpO2 detected!");
+    }
+    
+    if (isEmergency) {
+        triggerAutomaticSOS();
+    }
+}
+\end{lstlisting}
+
+\subsection{NMEA GPS Sentence Parsing}
+
+The NEO-6M GPS module outputs data in NMEA 0183 format. The firmware primarily parses the \$GPRMC (Recommended Minimum Specific GPS/TRANSIT Data) and \$GPGGA (Global Positioning System Fix Data) sentences to extract latitude, longitude, and altitude.
+
+\subsection{LoRa Packet Assembly and Disassembly}
+
+Data transmitted over the 433MHz LoRa network is structured to minimize payload size while ensuring reliable delivery. 
+
+\begin{infobox}
+The LoRa settings used are: Spreading Factor (SF) 7, Bandwidth (BW) 125kHz, and Coding Rate (CR) 4/5. These settings provide a balanced trade-off between range and data rate.
+\end{infobox}
+
+A typical packet structure includes:
+\begin{itemize}
+    \item \textbf{Header}: Node ID, Packet Type (SOS, GPS, VITALS, TEXT).
+    \item \textbf{Payload}: Formatted data bytes.
+    \item \textbf{Checksum}: Simple CRC for integrity verification.
+\end{itemize}
+
+\section{System Configurations}
+
+\subsection{Interrupt Handling Strategy}
+Hardware interrupts are utilized for time-critical events to prevent polling overhead. 
+\begin{itemize}
+    \item \textbf{MAX30102 Data Ready}: Triggers an interrupt when a new sample is available, waking the I2C read task.
+    \item \textbf{LoRa DIO0}: Triggers on TxDone or RxDone, signaling the communication task.
+    \item \textbf{SOS Button}: Configured as a high-priority falling-edge interrupt with hardware debouncing.
+\end{itemize}
+
+\subsection{Watchdog Timer Configuration}
+To ensure system reliability, the ESP32 Hardware Watchdog Timer (WDT) is configured with a 5-second timeout. Core tasks (sensor reading, communications) must periodically reset the WDT. If a task hangs due to an I2C lockup or an infinite loop, the WDT resets the microcontroller, ensuring the device recovers in remote environments.
+
+\subsection{Power Management}
+Power management is critical for the 18650 Li-ion battery. The firmware employs ESP32's sleep modes:
+\begin{itemize}
+    \item \textbf{Light Sleep}: Used during idle periods where memory and state are preserved, but CPU clock is gated.
+    \item \textbf{Deep Sleep}: Used in the wristband when detached. The device wakes up only via an external interrupt (wake-on-interrupt) triggered by the onboard accelerometer or a physical button press.
+\end{itemize}

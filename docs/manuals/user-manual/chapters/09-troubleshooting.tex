@@ -1,0 +1,58 @@
+\chapter{Troubleshooting}
+\label{ch:troubleshooting}
+
+This chapter provides solutions for common issues that may arise during the operation of the Mountain Climber Health \& GPS Tracker system. If a problem persists after following these troubleshooting steps, please consult the maintenance guidelines or contact technical support.
+
+\begin{table}[htbp]
+\centering
+\caption{Common Troubleshooting Issues}
+\label{tab:troubleshooting}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}p{0.25\linewidth}p{0.35\linewidth}p{0.4\linewidth}@{}}
+\toprule
+\textbf{Problem} & \textbf{Possible Cause} & \textbf{Solution} \\ \midrule
+
+% BLE Issues
+\textbf{Mobile app fails to connect to Climber Device via BLE} & Bluetooth is disabled on the phone. & Enable Bluetooth in the phone settings. \\
+ & Device is out of range. & Keep the phone within 5 meters of the Climber Main Device. \\
+ & Another device is currently connected. & Disconnect any previously paired devices and restart the pairing process. \\
+
+% GPS Issues
+\textbf{GPS module not getting a location fix} & No clear view of the sky. & Move to an open outdoor area away from tall buildings, dense trees, or deep valleys. \\
+ & Cold start initialization taking too long. & Wait up to 5-10 minutes if the device has been powered off for a long time. \\
+ & Antenna connector is loose. & Check and securely fasten the ceramic GPS antenna connection. \\
+
+% LoRa Issues
+\textbf{LoRa communication out of range or dropping packets} & Physical obstructions blocking the signal. & Move to a higher elevation or deploy a Repeater node. \\
+ & Antenna is damaged or improperly oriented. & Ensure the antenna is pointing vertically and is not bent or broken. \\
+ & Frequency or parameters mismatch. & Verify that all devices are configured to 433MHz, SF7, BW 125kHz via firmware settings. \\
+
+% Dashboard Issues
+\textbf{Dashboard not receiving data from Base Camp Unit} & USB Serial connection is loose or disconnected. & Reconnect the USB cable between the Base Camp Unit and the laptop. \\
+ & Incorrect COM port selected in dashboard. & Check Device Manager (Windows) or \texttt{/dev/tty*} (Mac/Linux) and select the correct COM port. \\
+ & Base Camp Unit not powered on. & Verify that the ESP32 Base Camp unit is powered and the power LED is on. \\
+
+% Sensor Issues
+\textbf{Wristband not reading Heart Rate or SpO2} & Sensor window is dirty or obstructed. & Clean the MAX30102 sensor window with a soft, dry cloth. \\
+ & Wristband worn too loosely or over clothing. & Fasten the wristband snugly against the skin on the wrist. \\
+ & Excessive arm movement during reading. & Keep the arm still for 10-15 seconds to allow the sensor to acquire a stable reading. \\
+
+% SOS Issues
+\textbf{SOS button not triggering emergency alert} & Button not held for the required duration. & Press and hold the physical SOS button for at least 3 seconds. \\
+ & Device battery is completely depleted. & Charge or replace the 18650 battery immediately. \\
+
+% App Issues
+\textbf{Mobile application crashes or freezes} & Outdated app version or OS incompatibility. & Update the mobile app to the latest version via the Portal. Restart the smartphone. \\
+ & Background permissions denied. & Ensure the app has permissions for Location, Bluetooth, and Background Execution. \\
+
+% Serial Port Issues
+\textbf{Serial port not detected by laptop} & Missing CP2102/CH340 USB-to-Serial drivers. & Download and install the appropriate driver for your operating system. \\
+ & Using a power-only USB cable. & Replace with a high-quality data-sync micro-USB cable. \\
+
+% Battery Issues
+\textbf{Battery draining excessively fast} & Transmission interval set too high. & Increase the delay between data transmissions via the app settings. \\
+ & Operating in extreme cold temperatures. & Keep the device insulated; cold temperatures severely reduce Li-ion battery capacity. \\
+\bottomrule
+\end{tabular}
+}
+\end{table}

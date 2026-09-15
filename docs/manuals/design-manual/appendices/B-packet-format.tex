@@ -1,0 +1,76 @@
+\chapter{LoRa Packet Format Specification}
+\label{app:packet_format}
+
+To optimize airtime and maximize the range of the LoRa transmissions, a custom, lightweight binary packet protocol is utilized instead of transmitting verbose string formats. This appendix details the byte-level structure.
+
+\section{General Packet Structure}
+
+Every transmission adheres to a standard header format followed by a variable-length payload.
+
+\begin{figure}[htbp]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}[
+        byte/.style={draw, rectangle, minimum height=1cm, align=center, font=\sffamily\scriptsize},
+        node distance=0cm
+    ]
+        \node[byte, minimum width=2cm, fill=gray!20] (preamble) {Preamble (1B)\\0xAA};
+        \node[byte, minimum width=2cm, right=of preamble, fill=blue!10] (dest) {Dest ID (1B)};
+        \node[byte, minimum width=2cm, right=of dest, fill=green!10] (source) {Source ID (1B)};
+        \node[byte, minimum width=2cm, right=of source, fill=orange!20] (type) {Msg Type (1B)};
+        \node[byte, minimum width=2cm, right=of type, fill=yellow!20] (len) {Length (1B)};
+        \node[byte, minimum width=4cm, right=of len, fill=red!10] (payload) {Variable Payload\\(Max 240B)};
+        \node[byte, minimum width=2cm, right=of payload, fill=purple!20] (crc) {CRC16 (2B)};
+    \end{tikzpicture}
+    }
+    \caption{Binary LoRa Packet Structure}
+    \label{fig:packet-structure}
+\end{figure}
+
+\section{Message Types and Payload Definitions}
+
+The \texttt{Msg Type} byte dictates how the receiver should parse the payload.
+
+\subsection{0x01: SOS Alert}
+Transmitted when a climber triggers an emergency.
+\begin{itemize}
+    \item \textbf{Payload Length:} 8 bytes
+    \item \textbf{Structure:} [Latitude (4B Float)] [Longitude (4B Float)]
+\end{itemize}
+
+\subsection{0x02: Routine GPS Update}
+Periodic location update.
+\begin{itemize}
+    \item \textbf{Payload Length:} 8 bytes
+    \item \textbf{Structure:} [Latitude (4B Float)] [Longitude (4B Float)]
+\end{itemize}
+
+\subsection{0x03: Health Vitals}
+Periodic or on-demand health data.
+\begin{itemize}
+    \item \textbf{Payload Length:} 3 bytes
+    \item \textbf{Structure:} [Heart Rate BPM (1B Uint)] [SpO2 \% (1B Uint)] [Temperature C (1B Int)]
+\end{itemize}
+
+\subsection{0x04: Text Message}
+Two-way chat messages.
+\begin{itemize}
+    \item \textbf{Payload Length:} 1 to 240 bytes
+    \item \textbf{Structure:} [ASCII Text String]
+\end{itemize}
+
+\section{Example Hex Dumps}
+
+\textbf{Example 1: Health Vitals Update}
+Climber 0x05 sends health data to Base Camp 0x00. HR=85, SpO2=98, Temp=24.
+\begin{verbatim}
+AA 00 05 03 03 55 62 18 [CRC_H] [CRC_L]
+\end{verbatim}
+\textit{Breakdown: AA (Preamble), 00 (Dest Base), 05 (Source Climber), 03 (MsgType Health), 03 (Len 3), 55 (85 BPM), 62 (98\%), 18 (24C).}
+
+\textbf{Example 2: SOS Alert}
+Climber 0x02 triggers SOS with coordinates 7.2906, 80.6337.
+\begin{verbatim}
+AA 00 02 01 08 40 E9 4B 38 42 A1 44 80 [CRC_H] [CRC_L]
+\end{verbatim}
+\textit{Breakdown: The 8-byte payload represents the two 32-bit IEEE 754 floats for Lat and Lng.}

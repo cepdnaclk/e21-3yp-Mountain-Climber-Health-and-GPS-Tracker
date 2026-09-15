@@ -1,0 +1,78 @@
+\chapter{Field Operations Guide}
+\label{ch:field-operations}
+
+This chapter provides essential guidelines and operational procedures for using the Mountain Climber Health \& GPS Tracker system in real-world mountaineering environments. Proper preparation and adherence to these protocols are critical for ensuring reliable communication, accurate health monitoring, and system longevity during an expedition.
+
+\section{Pre-Climb Preparation Checklist}
+\label{sec:pre-climb-checklist}
+
+Before commencing any expedition, ensure that all system components are fully operational. A systematic pre-climb check minimizes the risk of equipment failure in critical situations.
+
+\begin{itemize}
+    \item \textbf{Charge All Devices:} Verify that the Climber Main Device, Wristband, Repeater nodes, and Base Camp Unit are charged to 100\%. Check the battery voltage via the mobile application or dashboard.
+    \item \textbf{Test BLE Pairing:} Pair the Climber Main Device with the Wristband and mobile application. Confirm that real-time heart rate and SpO2 data are successfully transmitted and displayed on the app.
+    \item \textbf{Verify GPS Fix:} Take the Climber Main Device outdoors to establish a clear line of sight to the sky. Confirm that the NEO-6M GPS module acquires a valid location fix within 5 minutes (indicated by the double beep and dashboard update).
+    \item \textbf{Test LoRa Communication Range:} Conduct a brief range test between the Climber Main Device and the Base Camp Unit (or through a Repeater) to ensure data packets are successfully received. Verify that the Received Signal Strength Indicator (RSSI) is within acceptable limits.
+    \item \textbf{Pack Spares and Tools:} Ensure that spare 18650 Li-ion batteries, a portable power bank, micro-USB cables, and necessary tools for battery replacement are included in your gear.
+\end{itemize}
+
+\section{Deployment Strategy for Repeaters}
+\label{sec:repeater-deployment}
+
+In mountainous terrain, line-of-sight (LOS) communication is frequently obstructed by ridges, dense forests, and deep valleys. Strategic placement of Repeater nodes is essential to maintain network connectivity.
+
+\begin{itemize}
+    \item \textbf{Line-of-Sight Placement:} Position repeaters at elevated, unobstructed locations. The signal propagates best when both the transmitting and receiving antennas have a clear visual path.
+    \item \textbf{Elevation Considerations:} Deploy repeaters on ridges or high points rather than in valleys. Avoid placing them directly on the ground; elevate them on poles or attach them to robust structures or trees.
+    \item \textbf{Antenna Orientation:} Ensure the LoRa antennas are oriented vertically to maximize the omnidirectional radiation pattern.
+    \item \textbf{Weather Protection:} Secure the repeater enclosures against harsh weather conditions, ensuring that water cannot penetrate the casing or antenna connectors.
+\end{itemize}
+
+\section{Communication Range Tips}
+\label{sec:comm-range-tips}
+
+The SX1278 LoRa transceiver operates at 433MHz with Spreading Factor 7 (SF7) and 125kHz Bandwidth. While it is designed for long-range communication, environmental factors significantly impact performance.
+
+\begin{tipbox}
+To maximize LoRa range, keep the Climber Main Device attached to the upper part of the backpack, ensuring the antenna is exposed and points skyward.
+\end{tipbox}
+
+\begin{itemize}
+    \item \textbf{Clear Line of Sight (LOS):} Under ideal LOS conditions, the communication range can reach 2 to 5 kilometers.
+    \item \textbf{Obstructed Environments:} In dense forests, deep valleys, or rocky canyons, the range may be reduced to 500 meters or less. Utilize repeaters to bridge these gaps.
+    \item \textbf{Body Interference:} The human body absorbs RF signals. Avoid covering the main device's antenna with your body, metallic objects, or wet clothing.
+\end{itemize}
+
+\section{Battery Management on Multi-Day Climbs}
+\label{sec:battery-management}
+
+Managing battery life is crucial for multi-day expeditions. The system relies on 18650 Li-ion batteries, and power consumption must be optimized.
+
+\begin{itemize}
+    \item \textbf{Update Intervals:} If battery levels drop below 30\%, adjust the transmission frequency via the mobile app to send GPS and health updates less frequently (e.g., every 5 minutes instead of every 1 minute).
+    \item \textbf{Cold Weather Performance:} Lithium-ion batteries degrade in extremely cold temperatures. Keep the main device reasonably insulated.
+    \item \textbf{Power Down When Stationary:} If resting for extended periods at a safe camp, consider powering down the system or switching to a low-power standby mode to conserve battery.
+\end{itemize}
+
+\section{Emergency SOS Procedure}
+\label{sec:emergency-sos}
+
+The SOS functionality is the most critical feature of the system, designed to alert the Base Camp immediately in case of an emergency.
+
+\begin{cautionbox}
+Do not trigger the SOS alert unless there is a genuine emergency requiring immediate assistance. False alarms can lead to unnecessary deployment of rescue resources.
+\end{cautionbox}
+
+\textbf{How to Trigger SOS:}
+\begin{enumerate}
+    \item Locate the dedicated physical SOS button on the Climber Main Device or use the digital SOS button in the mobile application.
+    \item Press and hold the physical button for 3 seconds, or slide the confirmation bar in the mobile app.
+\end{enumerate}
+
+\textbf{What Happens When Triggered:}
+\begin{itemize}
+    \item The Climber Main Device immediately overrides standard transmission schedules and broadcasts an emergency LoRa packet with the highest priority.
+    \item The packet contains the precise GPS coordinates and the latest health vitals (Heart Rate and SpO2).
+    \item The local buzzer on the Climber Main Device will emit a continuous emergency tone, and the LED will flash red rapidly to confirm activation and aid visual location.
+    \item The Base Camp dashboard will trigger severe visual and audible alarms, displaying the climber's exact location on the map.
+\end{itemize}

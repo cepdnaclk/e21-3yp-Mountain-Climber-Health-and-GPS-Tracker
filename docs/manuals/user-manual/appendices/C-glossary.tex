@@ -1,0 +1,39 @@
+\chapter{Glossary}
+\label{app:glossary}
+
+\begin{description}
+
+\item[Bandwidth (BW)] The difference between the upper and lower frequencies in a continuous band of frequencies. In LoRa, a higher bandwidth increases data rate but reduces sensitivity.
+\item[Base Camp Unit] The central coordinating node of the system, responsible for receiving LoRa transmissions and interfacing with the Dashboard via USB/Serial or WiFi.
+\item[BLE (Bluetooth Low Energy)] A wireless personal area network technology designed for significantly reduced power consumption while maintaining a similar communication range to classic Bluetooth.
+\item[Climber Main Device] The primary processing and communication unit carried by the mountaineer, housing the GPS, LoRa transceiver, and connecting to the Wristband.
+\item[Coding Rate (CR)] A Forward Error Correction (FEC) mechanism used in LoRa to improve link reliability in the presence of interference.
+\item[Dashboard] The desktop application (built with Python Flask) used at the Base Camp to monitor climbers' live locations, health metrics, and manage text communications.
+\item[ESP32] A low-cost, low-power system-on-a-chip (SoC) microcontroller with integrated Wi-Fi and dual-mode Bluetooth, used as the processing brain for all devices in this project.
+\item[Flask] A lightweight WSGI web application framework written in Python, used here to host the backend and render the Base Camp dashboard.
+\item[GNSS (Global Navigation Satellite System)] The standard generic term for satellite navigation systems that provide autonomous geo-spatial positioning with global coverage (e.g., GPS, GLONASS, Galileo).
+\item[GPS (Global Positioning System)] A satellite-based radionavigation system owned by the United States government, used in this system via the NEO-6M module to determine climber coordinates.
+\item[Haversine Formula] A mathematical equation important in navigation, giving great-circle distances between two points on a sphere from their longitudes and latitudes.
+\item[Heart Rate] The speed of the heartbeat measured by the number of contractions (beats) of the heart per minute (BPM).
+\item[I2C (Inter-Integrated Circuit)] A synchronous, multi-master, multi-slave, packet switched, single-ended, serial communication bus. Used to communicate with the MAX30102 sensor.
+\item[IoT (Internet of Things)] A network of physical objects embedded with sensors, software, and other technologies for the purpose of connecting and exchanging data.
+\item[JSON (JavaScript Object Notation)] A lightweight data-interchange format that is easy for humans to read and write and easy for machines to parse and generate.
+\item[Line-of-Sight (LOS)] A type of propagation that can transmit and receive data only where transmit and receive stations are in view of each other without any sort of an obstacle between them.
+\item[LoRa (Long Range)] A proprietary, low-power wide-area network modulation technique based on spread-spectrum techniques and a variation of chirp spread spectrum (CSS).
+\item[MCU (Microcontroller Unit)] A small computer on a single integrated circuit. In this system, the ESP32 serves as the MCU.
+\item[Mesh Network] A local network topology in which the infrastructure nodes connect directly, dynamically and non-hierarchically to as many other nodes as possible and cooperate with one another to efficiently route data from/to clients.
+\item[NMEA (National Marine Electronics Association)] A standard data format supported by all GPS manufacturers, used to output positioning and timing data from the NEO-6M module.
+\item[OTA (Over-The-Air)] A method of distributing new software, configuration settings, and firmware updates to devices remotely via a wireless network (WiFi or BLE).
+\item[PostgreSQL] A powerful, open-source object-relational database system used by Supabase to store system data, user information, and telemetry.
+\item[Repeater] A device that receives a signal and retransmits it. Used in this system to extend the LoRa communication range over rugged terrain.
+\item[REST API (Representational State Transfer)] An architectural style for an application program interface (API) that uses HTTP requests to access and use data.
+\item[RSSI (Received Signal Strength Indicator)] A measurement of the power present in a received radio signal, commonly used to estimate distance or link quality in LoRa networks.
+\item[SoftAP (Software Access Point)] A feature that allows the ESP32 Base Camp unit to act as a WiFi access point, allowing the laptop or mobile devices to connect to it directly.
+\item[SOS] A standard international Morse code distress signal. In this system, it denotes the emergency broadcast triggered by a climber in distress.
+\item[SPI (Serial Peripheral Interface)] A synchronous serial communication interface specification used for short-distance communication, primarily in embedded systems (e.g., interfacing the ESP32 with the SX1278 LoRa module).
+\item[SpO2 (Peripheral Capillary Oxygen Saturation)] An estimate of the amount of oxygen in the blood, representing the percentage of oxygenated hemoglobin compared to the total amount of hemoglobin in the blood.
+\item[Spreading Factor (SF)] In LoRa, the duration of a chirp. A higher spreading factor increases the time on air, which increases range and reliability but reduces the data rate.
+\item[Supabase] An open-source Firebase alternative providing a Postgres database, Authentication, instant APIs, Edge Functions, Realtime subscriptions, and Storage.
+\item[UART (Universal Asynchronous Receiver-Transmitter)] A hardware communication protocol that uses asynchronous serial communication with configurable speed. Used for ESP32 to PC serial communication and GPS interfacing.
+
+\end{description}

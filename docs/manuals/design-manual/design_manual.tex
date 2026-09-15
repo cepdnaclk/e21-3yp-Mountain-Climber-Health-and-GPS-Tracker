@@ -1,0 +1,44 @@
+% =========================================================================
+%  DESIGN MANUAL — Mountain Climber Health & GPS Tracker
+% =========================================================================
+\documentclass[12pt, a4paper, openany]{report}
+
+% ── Load Shared Preamble ──
+\input{../shared/preamble}
+\input{../shared/titlepage}
+
+\begin{document}
+
+% ── Title Page ──
+\maketitlepage{Design Manual}{System Architecture \& Engineering Specification}
+
+% ── Table of Contents ──
+\tableofcontents
+\clearpage
+
+% ── List of Figures & Tables ──
+\listoffigures
+\listoftables
+\clearpage
+
+% ── Chapters ──
+\input{chapters/01-introduction}
+\input{chapters/02-system-architecture}
+\input{chapters/03-hardware-design}
+\input{chapters/04-communication-protocols}
+\input{chapters/05-firmware-design}
+\input{chapters/06-mobile-app-design}
+\input{chapters/07-dashboard-design}
+\input{chapters/08-portal-design}
+\input{chapters/09-database-design}
+\input{chapters/10-testing}
+\input{chapters/11-budget}
+\input{chapters/12-limitations}
+
+% ── Appendices ──
+\appendix
+\input{appendices/A-pin-configs}
+\input{appendices/B-packet-format}
+\input{appendices/C-api-reference}
+
+\end{document}
